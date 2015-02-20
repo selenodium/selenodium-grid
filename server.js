@@ -79,8 +79,6 @@ function main(args) {
 
 	serverDomain.run(function() {
 		server = http.createServer(function(req, res) {
-		  var url = req.url.toString();
-		  
 		  req.on("close", function(err) {
 		  	log.warn("!error: on close");
 		  });
