@@ -15,10 +15,10 @@ limitations under the License.
 */
 
 var http = require('http');
-
 var url = require('url');
 var net = require('net');
-var repl = require("repl");
+var repl = require('repl');
+var domain = require('domain');
 
 // servlets
 var registerServlet = require('./lib/registerservlet');
@@ -28,12 +28,11 @@ var hubStatusServlet = require('./lib/hubstatusservlet');
 var unregisterServlet = require('./lib/unregisterservlet');
 var welcomeServlet = require('./lib/welcomeservlet');
 
-registry = require('./lib/registry');
+var registry = require('./lib/registry');
 var models = require('./lib/models');
 var parser = require('./lib/parser');
 var log = require('./lib/log');
-store = require('./lib/store');
-var domain = require('domain');
+var store = require('./lib/store');
 
 var servletRoutes = {
 	"/grid/api/proxy" : statusServlet,
