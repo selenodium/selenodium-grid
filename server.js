@@ -190,9 +190,8 @@ function main(args) {
 	log.info("Server booting up... Listening on " + (parseInt(process.argv[2], 10) || 4444));
 }
 
-if (require.main === module) {
-	var args = parser.parseArgs();
-	main(args);
-}
+module.exports = main;
 
-module.exports.run = main;
+if (require.main === module) {
+	main(parser.parseArgs());
+}
