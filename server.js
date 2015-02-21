@@ -63,11 +63,11 @@ var parseIncoming = function(req, res, cb) {
 		return welcomeServlet.handleRequest(req, cb, res);
 	}
 	
-	return cb(new models.Response(400, "Unable to handle request - Invalid endpoint or request."));
+	return cb(new models.Response(400, 'Unable to handle request - Invalid endpoint or request.'));
 };
 
 function main(args) {
-	store.setConfig(args);
+    store.setConfig(args || {});
 	
 	var serverDomain = domain.create();
 	var server;
@@ -148,10 +148,11 @@ function main(args) {
 
 	server.on('clientError', function(exception, socket) {
 	    try {
-	    	if (socket.parser.incoming.url === "/grid/register") {
+	    	if (socket.parser.incoming.url === '/grid/register') {
 	    		return;
 	    	}
 	    } catch (e) {}
+
 	    if (exception.message.indexOf('ECONNRESET') > -1) {
 	    	log.debug(exception);
 	    	return;
@@ -172,12 +173,12 @@ function main(args) {
 			return;
 		}
 
-		log.info("Stopping hub");
+		log.info('Stopping hub');
 		server.close();
 	});
 
 	process.on('uncaughtException', function(err) {
-		log.warn("! Uncaught Exception occurred");
+		log.warn('! Uncaught Exception occurred');
 		log.warn(err);
 		log.warn(err.stack);
 	});
