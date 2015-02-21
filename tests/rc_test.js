@@ -1,12 +1,12 @@
 var server = require('../server');
-var registry = require('../registry');
+var registry = require('../lib/registry');
 
 var http = require('http');
 var should = require('should');
 var request = require('supertest');
 var assert = require('assert');
-var models = require('../models');
-var store = require('../store');
+var models = require('../lib/models');
+var store = require('../lib/store');
 var nodeServerMock;
 var testData = require('./testdata');
 

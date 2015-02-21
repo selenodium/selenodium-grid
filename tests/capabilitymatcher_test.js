@@ -1,13 +1,13 @@
 var server = require('../server');
-var matcher = require('../capabilitymatcher');
+var matcher = require('../lib/capabilitymatcher');
 
 var http = require('http');
 var should = require('should');
 var request = require('supertest');
 var assert = require('assert');
-var models = require('../models');
-var registry = require('../registry');
-var store = require('../store');
+var models = require('../lib/models');
+var registry = require('../lib/registry');
+var store = require('../lib/store');
 
 describe('CapabilityMatcher', function() {
 

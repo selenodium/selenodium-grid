@@ -1,13 +1,12 @@
 var server = require('../server');
-var registry = require('../registry');
+var registry = require('../lib/registry');
 
 var http = require('http');
 var should = require('should');
 var request = require('supertest');
 var assert = require('assert');
-var models = require('../models');
+var models = require('../lib/models');
 var testData = require('./testdata');
-var nodeServerMock;
 var nodes = [];
 describe('Parallel Tests', function() {
 
