@@ -2,7 +2,7 @@
   "name": "node-seleniumgrid",
   "description": "A Selenium grid built in NodeJS used in production on TestingBot.com",
   "private": false,
-  "tags":[
+  "tags": [
     "selenium",
     "grid"
   ],
@@ -11,7 +11,7 @@
     "email": "info@testingbot.com"
   },
   "main": "./server.js",
-  "bin":{
+  "bin": {
     "node-seleniumgrid": "./lib/bin.js"
   },
   "version": "0.1.0",
@@ -31,8 +31,15 @@
   "bugs": {
     "url": "https://github.com/testingbot/node-seleniumgrid/issues"
   },
-  "engines": { "node": ">= 0.6.15" },
+  "engines": {
+    "node": ">= 0.6.15"
+  },
   "scripts": {
-  "test": "mocha tests/*"
+    "test": "mocha tests/*.js"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "should": "^5.0.0",
+    "supertest": "^0.15.0"
   }
 }
