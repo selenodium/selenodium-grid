@@ -9,11 +9,20 @@ var models = require('../lib/models');
 var store = require('../lib/store');
 
 var testData = require('./testdata');
-var nodeServerMock;
 var nodes = [];
-var counter = 0;
+
 describe('ForwarderServlet', function() {
 
+    var app;
+    before(function() {
+        app = server();
+    });
+
+    after(function() {
+        app.close();
+    });
+
+    var nodeServerMock;
 	describe("requesting a capability not currently on the grid", function() {
 		beforeEach(function(d) {
 			store.flushdb(d);
@@ -21,7 +30,7 @@ describe('ForwarderServlet', function() {
 		
 		afterEach(function(d) {
 			this.timeout(30000);
-			request(server)
+			request(app)
 				.get('/grid/unregister?id=http://127.0.0.1:5558')
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);
@@ -34,7 +43,7 @@ describe('ForwarderServlet', function() {
 		it("should put a request with a capability we currently do not have in a pending state, once a node is available, the request should use the node", function(done) {
 			this.timeout(30000);
 			var sessionID = testData.getSessionID();
-			request(server)
+			request(app)
 				.get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
 				.end(function(err, res) {
 					// this should be triggered after the settimeout below.
@@ -54,7 +63,7 @@ describe('ForwarderServlet', function() {
 
 				var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"firefox","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":5558,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5558","remoteHost":"http://127.0.0.1:5558","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-				request(server)
+				request(app)
 					.post('/grid/register')
 					.send(postData)
 					.end(function(err, res) {
@@ -84,7 +93,7 @@ describe('ForwarderServlet', function() {
 					var port = (5656 + i);
 					var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"firefox","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":' + port + ',"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:' + port + '","remoteHost":"http://127.0.0.1:' + port + '","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-					request(server)
+					request(app)
 						.post('/grid/register')
 						.send(postData)
 						.end(function(err, res) {
@@ -104,7 +113,7 @@ describe('ForwarderServlet', function() {
 			var processed = 0;
 			for (var j = 0; j < nodes.length; j++) {
 				(function(j) {
-					request(server)
+					request(app)
 						.get('/grid/unregister?id=http://127.0.0.1:' + (5656 + j))
 						.end(function(err, res) {
 							res.statusCode.should.equal(200);
@@ -126,7 +135,7 @@ describe('ForwarderServlet', function() {
 				(function(i) {
 					store.getAvailableNodes(function(nodes) {
 						var nodeLength = nodes.length;
-						request(server)
+						request(app)
 							.get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
 							.end(function(err, res) {
 								var sessionID = res.text.replace("OK,", "");
@@ -135,14 +144,14 @@ describe('ForwarderServlet', function() {
 
 								});
 								// stop session, the next one should start
-								request(server)
-								.get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
-								.end(function(err, res) {
-									processed += 1;
-									if (processed >= 10) {
-										return done();
-									}
-								});
+								request(app)
+                                    .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
+                                    .end(function(err, res) {
+                                        processed += 1;
+                                        if (processed >= 10) {
+                                            return done();
+                                        }
+                                    });
 							});
 					});
 				})(i)
@@ -169,7 +178,7 @@ describe('ForwarderServlet', function() {
 
 			var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"firefox","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":5560,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5560","remoteHost":"http://127.0.0.1:5560","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-			request(server)
+			request(app)
 				.post('/grid/register')
 				.send(postData)
 				.end(function(err, res) {
@@ -181,7 +190,7 @@ describe('ForwarderServlet', function() {
 
 		afterEach(function(d) {
 			this.timeout(30000);
-			request(server)
+			request(app)
 				.get('/grid/unregister?id=http://127.0.0.1:5560')
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);
@@ -195,19 +204,19 @@ describe('ForwarderServlet', function() {
 			// launch two requests at the same time
 			this.timeout(30000);
 			setTimeout(function() {
-				request(server)
+				request(app)
 					.get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
 					.end(function(err, res) {
 						var sid = res.text.replace("OK,", "");
 						// stop session, the next one should start
-						request(server)
-						.get('/selenium-server/driver?cmd=testComplete&sessionId=' + sid)
-						.end(function(err, res) { });
+						request(app)
+                            .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sid)
+                            .end(function(err, res) { });
 					});
 			}, 1);
 
 			setTimeout(function() {
-				request(server)
+				request(app)
 					.get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
 					.end(function(err, res) {
 						done();
@@ -235,7 +244,7 @@ describe('ForwarderServlet', function() {
 
 			var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"firefox","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":5561,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5561","remoteHost":"http://127.0.0.1:5561","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-			request(server)
+			request(app)
 				.post('/grid/register')
 				.send(postData)
 				.end(function(err, res) {
@@ -247,7 +256,7 @@ describe('ForwarderServlet', function() {
 
 		afterEach(function(d) {
 			this.timeout(30000);
-			request(server)
+			request(app)
 				.get('/grid/unregister?id=http://127.0.0.1:5561')
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);
@@ -262,7 +271,7 @@ describe('ForwarderServlet', function() {
 		it('should end gracefully when a bad connection occurs and the xx retries did not help', function(done) {
 			this.timeout(30000);
 
-			request(server)
+			request(app)
 				.get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);
@@ -276,7 +285,7 @@ describe('ForwarderServlet', function() {
 						nodeServerMock.close();
 
 						// send a command now
-						request(server)
+						request(app)
 							.get('/selenium-server/driver?cmd=open&1=/&sessionId=' + sessionID)
 							.end(function(err, res) {
 								res.statusCode.should.equal(500);
@@ -290,7 +299,7 @@ describe('ForwarderServlet', function() {
 		it('should retry a connection, this simulates bad connection between hub and node', function(done) {
 			this.timeout(30000);
 
-		  	request(server)
+		  	request(app)
 				.get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);
@@ -318,7 +327,7 @@ describe('ForwarderServlet', function() {
 
 							var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"firefox","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":5561,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5561","remoteHost":"http://127.0.0.1:5561","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-							request(server)
+							request(app)
 								.post('/grid/register')
 								.send(postData)
 								.end(function(err, res) {
@@ -327,7 +336,7 @@ describe('ForwarderServlet', function() {
 								});
 						}, 3000);
 
-						request(server)
+						request(app)
 							.get('/selenium-server/driver?cmd=open&1=/&sessionId=' + sessionID)
 							.end(function(err, res) {
 								res.statusCode.should.equal(200);
