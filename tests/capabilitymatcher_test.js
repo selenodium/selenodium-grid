@@ -1,4 +1,3 @@
-var server = require('../server');
 var matcher = require('../lib/capabilitymatcher');
 
 var http = require('http');
