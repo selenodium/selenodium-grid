@@ -19,7 +19,16 @@
     "argparse": "~0.1.10",
     "async": "*",
     "colors": "~0.6.0-1",
+    "extend": "^2.0.0",
+    "q": "^1.1.2",
+    "q-io": "^1.11.6",
+    "server-destroy": "^1.0.0",
     "tracer": "*"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "should": "^5.0.0",
+    "supertest": "^0.15.0"
   },
   "directories": {
     "lib": "./lib"
@@ -36,10 +45,5 @@
   },
   "scripts": {
     "test": "mocha tests/*.js"
-  },
-  "devDependencies": {
-    "mocha": "^2.1.0",
-    "should": "^5.0.0",
-    "supertest": "^0.15.0"
   }
 }

@@ -1,14 +1,14 @@
 /*
 Copyright 2013 TestingBot
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the 'License');
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
      http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
+distributed under the License is distributed on an 'AS IS' BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
@@ -17,8 +17,9 @@ limitations under the License.
 var http = require('http');
 var url = require('url');
 var net = require('net');
-var repl = require('repl');
+//var repl = require('repl');
 var domain = require('domain');
+var enableDestroy = require('server-destroy');
 
 // servlets
 var registerServlet = require('./lib/registerservlet');
@@ -35,22 +36,22 @@ var log = require('./lib/log');
 var store = require('./lib/store');
 
 var servletRoutes = {
-	"/grid/api/proxy" : statusServlet,
-	"/grid/register" : registerServlet,
-	"/grid/unregister" : unregisterServlet,
-	"/selenium-server/driver" : requestHandler,
-	"/wd/hub/session" : requestHandler,
-	"/grid/api/hub" : hubStatusServlet
+	'/grid/api/proxy' : statusServlet,
+	'/grid/register' : registerServlet,
+	'/grid/unregister' : unregisterServlet,
+	'/selenium-server/driver' : requestHandler,
+	'/wd/hub/session' : requestHandler,
+	'/grid/api/hub' : hubStatusServlet
 };
 
 var parseIncoming = function(req, res, cb) {
-	var srvUrl = url.parse(req.url.toString(), true);
+	var srvUrl = url.parse(req.url.toString(), true),
+        servlet;
 	if (servletRoutes[srvUrl.pathname]) {
-		var servlet = servletRoutes[srvUrl.pathname];
+		servlet = servletRoutes[srvUrl.pathname];
 		return servlet.handleRequest(req, cb, res);
 	} else {
 		// slower lookup of routes
-		var servlet;
 		for (var route in servletRoutes) {
 			if (route === srvUrl.pathname.substring(0, route.length)) {
 				servlet = servletRoutes[route];
@@ -66,19 +67,14 @@ var parseIncoming = function(req, res, cb) {
 	return cb(new models.Response(400, 'Unable to handle request - Invalid endpoint or request.'));
 };
 
-function main(args) {
+function main(args, cb) {
+    if (typeof args === 'function') {
+        cb = args;
+        args = {};
+    }
     store.setConfig(args || {});
-	
-	//var serverDomain = domain.create();
-	var port = parseInt(process.argv[2], 10) || 4444,
-        server;
 
-	//serverDomain.on('error', function(e) {
-	//    log.warn(e);
-	//    log.warn(e.stack);
-	//});
-    //
-	//serverDomain.run(function() {
+	var port = parseInt(process.argv[2], 10) || 4444,
         server = http.createServer(function(req, res) {
             req.on('close', function(err) {
                 log.warn('!error: on close');
@@ -119,14 +115,10 @@ function main(args) {
                 try {
                     res.writeHead(500, {'Content-Type': 'text/plain'});
                     res.end('Error - Socket timed out after 6 minutes');
-                } catch (e) {
-
-                }
+                } catch (e) {}
                 try {
                     res.socket.destroy();
-                } catch (e) {
-
-                }
+                } catch (e) {}
             });
 
             parseIncoming(req, res, function(response) {
@@ -135,11 +127,16 @@ function main(args) {
             });
 
         });
-        server.httpAllowHalfOpen = true;
-        server.listen(port, '0.0.0.0');
-	//});
 
-    // TODO: reimplement for tests (need ability to close server); or was it working?
+    enableDestroy(server);
+    server.httpAllowHalfOpen = true;
+    // TODO: IPv6
+    server.listen(port, '0.0.0.0', function() {
+        log.info('Server booting up... Listening on ' + port);
+        cb && cb();
+    });
+
+    // TODO: reimplement for tests (need ability to close server); or was it realy working?
     /*var manager = net.createServer(function(socket) {
             repl.start({
                     prompt: 'node via TCP socket> ',
@@ -172,11 +169,12 @@ function main(args) {
 	});
 
 	process.on('SIGTERM', function() {
-		if (registry.pendingRequests.length > 0) {
-			log.warn("Can't stop hub just yet, pending requests!");
+		// TODO: reimplememnt so it will respect that processPendingRequest()
+        // processes not all pending requests on single call
+        if (registry.pendingRequests.length > 0) {
+			log.warn('Can\'t stop hub just yet, pending requests!');
 			// try now
 			registry.processPendingRequest();
-
 			return;
 		}
 
@@ -196,7 +194,6 @@ function main(args) {
 	//	process.exit();
 	//});
 
-	log.info('Server booting up... Listening on ' + port);
     return server;
 }
 
