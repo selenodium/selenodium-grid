@@ -1,16 +1,14 @@
-var server = require('../server');
-var registry = require('../lib/registry');
+var server = require('../server'),
+    registry = require('../lib/registry'),
+    models = require('../lib/models'),
+    store = require('../lib/store'),
+    q = require('q'),
+    http = require('http'),
+    expect = require('must'),
+    supertest = require('./q-supertest'),
+    helpers = require('./helpers');
 
-var q = require('q');
-var http = require('http');
-var expect = require('must');
-var supertest = require('./q-supertest');
-var models = require('../lib/models');
-var store = require('../lib/store');
-var testData = require('./testdata');
-var helpers = require('./helpers');
-
-describe('WebDriver', function() {
+describe('WebDriverServlet', function() {
 	describe('Correctly forward to a node', function() {
         var app, nodeMock;
         beforeEach(function(done) {
@@ -19,14 +17,11 @@ describe('WebDriver', function() {
             });
         });
 
-        afterEach(function(done) {
-            helpers.unregisterNodeMock(app, nodeMock, function(err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                app.destroy(done);
-            });
+        afterEach(function() {
+            return helpers.unregisterNodeMock(app, nodeMock)
+                .then(function() {
+                    return q(app).nmcall('destroy');
+                });
         });
 
         it('can open a new browser session on a remote WebDriver node', function() {
@@ -55,7 +50,7 @@ describe('WebDriver', function() {
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .end()
                 .then(function(res) {
-                    var sessionID = helpers.getSessionId(res);
+                    var sessionID = helpers.getWDSessionId(res);
                     // delete opened session
                     return supertest(app)
                         .delete('/wd/hub/session/' + sessionID)
@@ -94,7 +89,7 @@ describe('WebDriver', function() {
                 .post('/wd/hub/session/4354353453/url')
                 .send({url: 'http://testingbot.com'})
                 .expect(500, 'Unknown sessionId: 4354353453')
-                .end()
+                .end();
 
             // TODO: should move out to a separate registry test
             //registry.getSessionById('4354353453', function(session) {
@@ -110,7 +105,7 @@ describe('WebDriver', function() {
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .end()
                 .then(function(res) {
-                    var sessionID = helpers.getSessionId(res);
+                    var sessionID = helpers.getWDSessionId(res);
                     // delete opened session
                     return q(supertest(app)
                         .delete('/wd/hub/session/' + sessionID))
@@ -133,14 +128,14 @@ describe('WebDriver', function() {
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .end()
                 .then(function(res) {
-                    var sessionID = helpers.getSessionId(res);
+                    var sessionID = helpers.getWDSessionId(res);
                     // delete opened session
                     return supertest(app)
                         .delete('/wd/hub/session/' + sessionID)
                         .expect(200, '')
                         .end()
                         .then(function(res) {
-                            // delete opened session once again
+                            // try to delete opened session once again
                             supertest(app)
                                 .delete('/wd/hub/session/' + sessionID)
                                 .expect(500, 'Unknown sessionId: ' + sessionID)
@@ -183,16 +178,13 @@ describe('WebDriver', function() {
             });
         });
 
-        afterEach(function(done) {
+        afterEach(function() {
             registry.TEST_TIMEOUT = 90000;
 
-            helpers.unregisterNodeMock(app, nodeMock, function(err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                app.destroy(done);
-            });
+            return helpers.unregisterNodeMock(app, nodeMock)
+                .then(function() {
+                    return q(app).nmcall('destroy');
+                });
         });
 
         it('should correctly handle timeouts during tests. If it takes xx seconds before a new command is received, the test should time out and resources should be cleaned', function() {
@@ -204,7 +196,7 @@ describe('WebDriver', function() {
                 .expect(302)
                 .end()
                 .then(function(res) {
-                    var sessionID = helpers.getSessionId(res);
+                    var sessionID = helpers.getWDSessionId(res);
                     // 30 seconds wait for the next command
                     return q.delay(30000)
                         .then(function() {
@@ -244,7 +236,7 @@ describe('WebDriver', function() {
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .end()
                 .then(function(res) {
-                    var sessionID = helpers.getSessionId(res);
+                    var sessionID = helpers.getWDSessionId(res);
                     // 3 seconds wait for the next command
                     return q.delay(3000)
                         .then(function() {
@@ -295,9 +287,7 @@ describe('WebDriver', function() {
                                     desiredCapabilities: {
                                         browserName: 'firefox',
                                         platform: 'LiNux',
-                                        version: 14,
-                                        api_key: testData.CLIENT_KEY,
-                                        api_secret: testData.CLIENT_SECRET
+                                        version: 14
                                     }
                                 })
                                 .end(function(err, res) {});
@@ -337,9 +327,7 @@ describe('WebDriver', function() {
                             desiredCapabilities: {
                                 browserName: 'firefox',
                                 platform: 'LINUX',
-                                version: 3,
-                                api_key: testData.CLIENT_KEY,
-                                api_secret: testData.CLIENT_SECRET
+                                version: 3
                             }
                         })
 						.end(function(err, res) {});

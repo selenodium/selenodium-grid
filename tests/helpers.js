@@ -1,8 +1,9 @@
-var http = require('http'),
+var q = require('q'),
+    http = require('http'),
     https = require('https'),
     extend = require('extend'),
-    request = require('supertest'),
     enableDestroy = require('server-destroy'),
+    supertest = require('./q-supertest'),
     testData = require('./testdata');
 
 function createRegisterPost(opts) {
@@ -69,12 +70,24 @@ function createWebDriverNodeMock(opts, cb) {
             var url = req.url.toString(),
                 sessionID = testData.getSessionID();
 
-            if (url.indexOf('/session') > -1 && req.method.toUpperCase() !== 'DELETE') {
-                res.writeHead(302, {'Location': '/wd/hub/session/' + sessionID});
-                res.end();
-            } else if (req.method.toUpperCase() === 'DELETE') {
-                res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end('');
+            if (determineProtocol(url) === 'WebDriver') {
+                // WebDriver
+                if (url.indexOf('/session') > -1 && req.method.toUpperCase() !== 'DELETE') {
+                    res.writeHead(302, {'Location': '/wd/hub/session/' + sessionID});
+                    res.end();
+                } else if (req.method.toUpperCase() === 'DELETE') {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.end('');
+                }
+            } else {
+                // RC
+                if (url.indexOf('getNewBrowserSession') > -1) {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.end('OK,' + sessionID);
+                } else if (url.indexOf('testComplete') > -1) {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.end('OK');
+                }
             }
         })
         .listen(opts.port || 4444, opts.host || '127.0.0.1', function(err) {
@@ -90,7 +103,7 @@ function createWebDriverNodeMock(opts, cb) {
 function createAndRegisterWebDriverNodeMock(app, opts, cb) {
     return createWebDriverNodeMock(opts, function(err) {
         if (err) {
-            done(err);
+            cb(err);
             return;
         }
 
@@ -101,24 +114,23 @@ function createAndRegisterWebDriverNodeMock(app, opts, cb) {
 }
 
 function registerNodeMock(app, opts, cb) {
-    request(app)
+    return supertest(app)
         .post('/grid/register')
         .send(createRegisterPost(opts))
         .expect(200, 'OK - Welcome')
-        .end(cb);
+        .end()
+        .nodeify(cb);
 }
 
 function unregisterNodeMock(app, mock, cb) {
-    request(app)
+    return supertest(app)
         .get('/grid/unregister?id=' + getServerAddress(mock))
         .expect(200, 'OK - Bye')
-        .end(function(err, res) {
-            if (err) {
-                cb(err);
-                return;
-            }
-            mock.destroy(cb);
-        });
+        .end()
+        .then(function() {
+            return q(mock).nmcall('destroy');
+        })
+        .nodeify(cb);
 }
 
 function getServerAddress(server, path) {
@@ -127,12 +139,22 @@ function getServerAddress(server, path) {
     return protocol + '://' + addr.address + ':' + addr.port + (path || '');
 }
 
-function getSessionId(res) {
+function getWDSessionId(res) {
     return res.headers.location.replace('/wd/hub/session/', '');
+}
+
+function getRCSessionId(res) {
+    return res.text.replace('OK,', '');
+}
+
+function determineProtocol(url) {
+    return url.indexOf('/selenium-server/driver') > -1 ? 'RC' : 'WebDriver';
 }
 
 exports.createRegisterPost = createRegisterPost;
 exports.createWebDriverNodeMock = createWebDriverNodeMock;
 exports.createAndRegisterWebDriverNodeMock = createAndRegisterWebDriverNodeMock;
 exports.unregisterNodeMock = unregisterNodeMock;
-exports.getSessionId = getSessionId;
+exports.getWDSessionId = getWDSessionId;
+exports.getRCSessionId = getRCSessionId;
+exports.determineProtocol = determineProtocol;
