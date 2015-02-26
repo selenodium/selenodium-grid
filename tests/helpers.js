@@ -110,7 +110,7 @@ function registerNodeMock(app, opts, cb) {
 
 function unregisterNodeMock(app, mock, cb) {
     request(app)
-        .get('/grid/unregister?id=' + serverAddress(mock))
+        .get('/grid/unregister?id=' + getServerAddress(mock))
         .expect(200, 'OK - Bye')
         .end(function(err, res) {
             if (err) {
@@ -121,13 +121,18 @@ function unregisterNodeMock(app, mock, cb) {
         });
 }
 
-function serverAddress(server, path) {
+function getServerAddress(server, path) {
     var addr = server.address(),
         protocol = server instanceof https.Server ? 'https' : 'http';
     return protocol + '://' + addr.address + ':' + addr.port + (path || '');
+}
+
+function getSessionId(res) {
+    return res.headers.location.replace('/wd/hub/session/', '');
 }
 
 exports.createRegisterPost = createRegisterPost;
 exports.createWebDriverNodeMock = createWebDriverNodeMock;
 exports.createAndRegisterWebDriverNodeMock = createAndRegisterWebDriverNodeMock;
 exports.unregisterNodeMock = unregisterNodeMock;
+exports.getSessionId = getSessionId;
