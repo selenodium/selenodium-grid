@@ -23,10 +23,10 @@ var domain = require('domain');
 var enableDestroy = require('server-destroy');
 
 // servlets
-var registerServlet = require('./lib/registerservlet');
-var statusServlet = require('./lib/statusservlet');
+var apiHubServlet = require('./lib/servlets/apiHub');
+var apiProxyServlet = require('./lib/servlets/apiProxy');
 var requestHandler = require('./lib/requesthandler');
-var hubStatusServlet = require('./lib/hubstatusservlet');
+var registerServlet = require('./lib/registerservlet');
 var unregisterServlet = require('./lib/unregisterservlet');
 var welcomeServlet = require('./lib/welcomeservlet');
 
@@ -37,12 +37,17 @@ var log = require('./lib/log');
 var store = require('./lib/store');
 
 var servletRoutes = {
-	'/grid/api/proxy' : statusServlet,
-	'/grid/register' : registerServlet,
-	'/grid/unregister' : unregisterServlet,
-	'/selenium-server/driver' : requestHandler,
-	'/wd/hub/session' : requestHandler,
-	'/grid/api/hub' : hubStatusServlet
+    '/grid/api/hub': apiHubServlet,
+    '/grid/api/proxy': apiProxyServlet,
+    //'/grid/api/testsession': 'not implemented',
+    //'/grid/driver': 'not implemented',
+    //'/grid/resources': 'not implemented',
+    //'/lifecycle-manager': 'not implemented',
+    '/grid/register': registerServlet,
+    '/grid/unregister': unregisterServlet,
+    '/selenium-server/driver': requestHandler,
+    //'/wd/hub/status': 'not implemented',
+    '/wd/hub/session': requestHandler
 };
 
 var parseIncoming = function(req, res, cb) {

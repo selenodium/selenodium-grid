@@ -1,10 +1,9 @@
 var server = require('../server'),
-    expect = require('must'),
     path = require('path'),
     fs = require('q-io/fs'),
     supertest = require('./q-supertest');
 
-describe('HubStatusServlet', function() {
+describe('apiHubServlet', function() {
     var app;
     before(function() {
         return server()

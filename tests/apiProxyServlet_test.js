@@ -1,12 +1,11 @@
 var server = require('../server'),
-    should = require('should'),
     expect = require('must'),
     q = require('q'),
     supertest = require('./q-supertest'),
     helpers = require('./helpers'),
     registry = require('../lib/registry');
 
-describe('StatusServlet', function() {
+describe('apiProxyServlet', function() {
     var app;
     before(function() {
         return server()
