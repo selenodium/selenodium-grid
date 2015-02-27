@@ -33,10 +33,10 @@ var unregisterServlet = require('./lib/unregisterservlet');
 var welcomeServlet = require('./lib/welcomeservlet');
 
 var registry = require('./lib/registry');
+var store = require('./lib/store');
 var models = require('./lib/models');
 var parser = require('./lib/parser');
 var log = require('./lib/log');
-var store = require('./lib/store');
 
 var servletRoutes = {
     '/grid/api/hub': apiHubServlet,
