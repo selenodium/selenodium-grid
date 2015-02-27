@@ -8,8 +8,11 @@ var server = require('../server'),
 
 describe('StatusServlet', function() {
     var app;
-    before(function(done) {
-        app = server(done);
+    before(function() {
+        return server()
+            .then(function(application) {
+                app = application;
+            });
     });
 
     after(function(done) {
@@ -25,8 +28,7 @@ describe('StatusServlet', function() {
                     .expect(404, {
                         msg: 'Cannot find proxy with ID=http://127.0.0.1:5560 in the registry.',
                         success: false
-                    })
-                    .end();
+                    });
             });
 
             it('must respond with ok if the node was registered before', function() {
@@ -35,7 +37,6 @@ describe('StatusServlet', function() {
                     .post('/grid/register')
                     .send(helpers.createRegisterPost({port: 5560}))
                     .expect(200, 'OK - Welcome')
-                    .end()
                     .then(function() {
                         // query for the node id
                         return supertest(app)
@@ -43,8 +44,7 @@ describe('StatusServlet', function() {
                             .expect(200, {
                                 msg: 'Proxy found!',
                                 success: true
-                            })
-                            .end();
+                            });
                     });
             });
         });
@@ -65,8 +65,7 @@ describe('StatusServlet', function() {
                 return supertest(app)
                     .post('/grid/register')
                     .send(helpers.createRegisterPost({port: 5560}))
-                    .expect(200, 'OK - Welcome')
-                    .end();
+                    .expect(200, 'OK - Welcome');
             });
 
             it('must return a not found response if the node has not shown up again in NODE_TIMEOUT time', function() {
@@ -80,8 +79,7 @@ describe('StatusServlet', function() {
                             .expect(404, {
                                 msg: 'Cannot find proxy with ID=http://127.0.0.1:5560 in the registry.',
                                 success: false
-                            })
-                            .end();
+                            });
                     });
             });
 
@@ -98,15 +96,13 @@ describe('StatusServlet', function() {
                                 msg: 'Cannot find proxy with ID=http://127.0.0.1:5560 in the registry.',
                                 success: false
                             })
-                            .end()
                     })
                     .then(function() {
                         // register node on the grid
                         return supertest(app)
                             .post('/grid/register')
                             .send(helpers.createRegisterPost({port: 5560}))
-                            .expect(200, 'OK - Welcome')
-                            .end();
+                            .expect(200, 'OK - Welcome');
                     });
             });
         });

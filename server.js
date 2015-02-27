@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+var q = require('q');
 var http = require('http');
 var url = require('url');
 var net = require('net');
@@ -130,10 +131,12 @@ function main(args, cb) {
 
     enableDestroy(server);
     server.httpAllowHalfOpen = true;
+
     // TODO: IPv6
+    var defer = q.defer();
     server.listen(port, '0.0.0.0', function() {
         log.info('Server booting up... Listening on ' + port);
-        cb && cb();
+        defer.resolve(server);
     });
 
     // TODO: reimplement for tests (need ability to close server); or was it realy working?
@@ -194,11 +197,11 @@ function main(args, cb) {
 	//	process.exit();
 	//});
 
-    return server;
+    return defer.promise.nodeify(cb);
 }
 
 module.exports = main;
 
 if (require.main === module) {
-	main(parser.parseArgs());
+	main(parser.parseArgs()).done();
 }

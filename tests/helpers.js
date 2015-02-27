@@ -1,6 +1,6 @@
 var q = require('q'),
-    http = require('http'),
-    https = require('https'),
+    http = require('q-io/http'),
+    HttpsServer = require('https').Server,
     extend = require('extend'),
     enableDestroy = require('server-destroy'),
     supertest = require('./q-supertest'),
@@ -64,61 +64,63 @@ function createRegisterPost(opts) {
     return res;
 }
 
-function createWebDriverNodeMock(opts, cb) {
-    var server = http
-        .createServer(function(req, res) {
-            var url = req.url.toString(),
+function createNodeMock(opts, cb) {
+    return http
+        .Server(function(req, res) {
+            var uri = req.path,
                 sessionID = testData.getSessionID();
 
-            if (determineProtocol(url) === 'WebDriver') {
+            if (determineProtocol(uri) === 'WebDriver') {
                 // WebDriver
-                if (url.indexOf('/session') > -1 && req.method.toUpperCase() !== 'DELETE') {
-                    res.writeHead(302, {'Location': '/wd/hub/session/' + sessionID});
-                    res.end();
+                if (uri.indexOf('/session') > -1 && req.method.toUpperCase() !== 'DELETE') {
+                    res.node.writeHead(302, {'Location': '/wd/hub/session/' + sessionID});
+                    res.node.end();
                 } else if (req.method.toUpperCase() === 'DELETE') {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end('');
+                    res.node.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.node.end('');
                 }
             } else {
                 // RC
-                if (url.indexOf('getNewBrowserSession') > -1) {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end('OK,' + sessionID);
-                } else if (url.indexOf('testComplete') > -1) {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end('OK');
+                if (uri.indexOf('getNewBrowserSession') > -1) {
+                    res.node.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.node.end('OK,' + sessionID);
+                } else if (uri.indexOf('testComplete') > -1) {
+                    res.node.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.node.end('OK');
                 }
             }
         })
-        .listen(opts.port || 4444, opts.host || '127.0.0.1', function(err) {
-            cb(err, server);
-        });
+        .listen(opts.port || 4444, opts.host || '127.0.0.1')
+        .then(function(server) {
+            // add destroy() method
+            enableDestroy(server.node);
 
-    // add destroy() method
-    enableDestroy(server);
+            server.destroy = function() {
+                return q(server.node).nmcall('destroy');
+            };
 
-    return server;
+            return server;
+        })
+        .nodeify(cb);
 }
 
-function createAndRegisterWebDriverNodeMock(app, opts, cb) {
-    return createWebDriverNodeMock(opts, function(err) {
-        if (err) {
-            cb(err);
-            return;
-        }
-
-        registerNodeMock(app, opts, function(err, res) {
-            cb(err);
-        });
-    });
+function createAndRegisterNodeMock(app, opts, cb) {
+    return createNodeMock(opts)
+        .then(function(server) {
+            return registerNodeMock(app, opts)
+                .thenResolve([server, app]);
+        })
+        .nodeify(cb);
 }
 
 function registerNodeMock(app, opts, cb) {
-    return supertest(app)
-        .post('/grid/register')
-        .send(createRegisterPost(opts))
-        .expect(200, 'OK - Welcome')
-        .end()
+    return q(app)
+        .then(function(app) {
+            return supertest(app)
+                .post('/grid/register')
+                .send(createRegisterPost(opts))
+                .expect(200, 'OK - Welcome');
+        })
         .nodeify(cb);
 }
 
@@ -126,16 +128,15 @@ function unregisterNodeMock(app, mock, cb) {
     return supertest(app)
         .get('/grid/unregister?id=' + getServerAddress(mock))
         .expect(200, 'OK - Bye')
-        .end()
         .then(function() {
-            return q(mock).nmcall('destroy');
+            return mock.destroy();
         })
         .nodeify(cb);
 }
 
 function getServerAddress(server, path) {
     var addr = server.address(),
-        protocol = server instanceof https.Server ? 'https' : 'http';
+        protocol = server instanceof HttpsServer ? 'https' : 'http';
     return protocol + '://' + addr.address + ':' + addr.port + (path || '');
 }
 
@@ -152,8 +153,8 @@ function determineProtocol(url) {
 }
 
 exports.createRegisterPost = createRegisterPost;
-exports.createWebDriverNodeMock = createWebDriverNodeMock;
-exports.createAndRegisterWebDriverNodeMock = createAndRegisterWebDriverNodeMock;
+exports.createNodeMock = createNodeMock;
+exports.createAndRegisterNodeMock = createAndRegisterNodeMock;
 exports.unregisterNodeMock = unregisterNodeMock;
 exports.getWDSessionId = getWDSessionId;
 exports.getRCSessionId = getRCSessionId;

@@ -11,10 +11,12 @@ var server = require('../server'),
 describe('WebDriverServlet', function() {
 	describe('Correctly forward to a node', function() {
         var app, nodeMock;
-        beforeEach(function(done) {
-            app = server(function() {
-                nodeMock = helpers.createAndRegisterWebDriverNodeMock(app, {port: 5590}, done);
-            });
+        beforeEach(function() {
+            return helpers.createAndRegisterNodeMock(q.nfcall(server), {port: 5590})
+                .spread(function(mock, application) {
+                    nodeMock = mock;
+                    app = application;
+                });
         });
 
         afterEach(function() {
@@ -30,8 +32,7 @@ describe('WebDriverServlet', function() {
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .expect(302)
-                .expect('Location', new RegExp('^/wd/hub/session/\\w+$'))
-                .end();
+                .expect('Location', new RegExp('^/wd/hub/session/\\w+$'));
         });
 
         it('should correctly redirect if the desired version is not a string but an int', function() {
@@ -39,8 +40,7 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox', version: 9}})
-                .expect(302)
-                .end();
+                .expect(302);
         });
 
         it('should clean up registry when sending the delete command', function() {
@@ -48,15 +48,13 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getWDSessionId(res);
                     // delete opened session
                     return supertest(app)
                         .delete('/wd/hub/session/' + sessionID)
                         .send({desiredCapabilities: {browserName: 'firefox'}})
-                        .expect(200, '')
-                        .end();
+                        .expect(200, '');
                 });
 
                 // TODO: should move out to a separate registry test
@@ -88,8 +86,7 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session/4354353453/url')
                 .send({url: 'http://testingbot.com'})
-                .expect(500, 'Unknown sessionId: 4354353453')
-                .end();
+                .expect(500, 'Unknown sessionId: 4354353453');
 
             // TODO: should move out to a separate registry test
             //registry.getSessionById('4354353453', function(session) {
@@ -103,21 +100,18 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getWDSessionId(res);
                     // delete opened session
-                    return q(supertest(app)
-                        .delete('/wd/hub/session/' + sessionID))
-                        .nmcall('end');
+                    return supertest(app)
+                        .delete('/wd/hub/session/' + sessionID);
                 })
                 .then(function(res) {
                     // open another new session
                     return supertest(app)
                         .post('/wd/hub/session')
                         .send({desiredCapabilities: {browserName: 'firefox'}})
-                        .expect(302)
-                        .end();
+                        .expect(302);
                 })
         });
 
@@ -126,20 +120,17 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getWDSessionId(res);
                     // delete opened session
                     return supertest(app)
                         .delete('/wd/hub/session/' + sessionID)
                         .expect(200, '')
-                        .end()
                         .then(function(res) {
                             // try to delete opened session once again
                             supertest(app)
                                 .delete('/wd/hub/session/' + sessionID)
-                                .expect(500, 'Unknown sessionId: ' + sessionID)
-                                .end();
+                                .expect(500, 'Unknown sessionId: ' + sessionID);
                         });
                 });
 
@@ -169,13 +160,15 @@ describe('WebDriverServlet', function() {
 
     describe('handle timeouts during test', function() {
         var app, nodeMock;
-        beforeEach(function(done) {
+        beforeEach(function() {
             registry.TEST_TIMEOUT = 6000;
             registry.NODE_TIMEOUT = 40000;
 
-            app = server(function() {
-                nodeMock = helpers.createAndRegisterWebDriverNodeMock(app, {port: 5590}, done);
-            });
+            return helpers.createAndRegisterNodeMock(q.nfcall(server), {port: 5590})
+                .spread(function(mock, application) {
+                    nodeMock = mock;
+                    app = application;
+                });
         });
 
         afterEach(function() {
@@ -194,7 +187,6 @@ describe('WebDriverServlet', function() {
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .expect(302)
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getWDSessionId(res);
                     // 30 seconds wait for the next command
@@ -203,8 +195,7 @@ describe('WebDriverServlet', function() {
                             return supertest(app)
                                 .post('/wd/hub/session/' + sessionID + '/url')
                                 .send({url: 'http://testingbot.com'})
-                                .expect(500, 'Unknown sessionId: ' + sessionID)
-                                .end();
+                                .expect(500, 'Unknown sessionId: ' + sessionID);
                         });
                 });
 
@@ -234,7 +225,6 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getWDSessionId(res);
                     // 3 seconds wait for the next command
@@ -242,8 +232,7 @@ describe('WebDriverServlet', function() {
                         .then(function() {
                             return supertest(app)
                                 .delete('/wd/hub/session/' + sessionID)
-                                .expect(200)
-                                .end();
+                                .expect(200);
                         });
                 });
         });

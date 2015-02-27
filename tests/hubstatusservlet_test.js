@@ -6,8 +6,11 @@ var server = require('../server'),
 
 describe('HubStatusServlet', function() {
     var app;
-    before(function(done) {
-        app = server(done);
+    before(function() {
+        return server()
+            .then(function(application) {
+                app = application;
+            });
     });
 
     after(function(done) {
@@ -21,8 +24,7 @@ describe('HubStatusServlet', function() {
                     return supertest(app)
                         .get('/grid/api/hub/')
                         .expect(200, JSON.parse(data.toString()))
-                        .expect('Content-Type', /json/)
-                        .end();
+                        .expect('Content-Type', /json/);
                 });
 		});
 	});

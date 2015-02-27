@@ -5,8 +5,11 @@ var server = require('../server'),
 describe('RegisterServlet', function() {
     describe('POST /grid/register', function() {
         var app;
-        before(function(done) {
-            app = server(done);
+        before(function() {
+            return server()
+                .then(function(application) {
+                    app = application;
+                });
         });
 
         after(function(done) {
@@ -18,16 +21,14 @@ describe('RegisterServlet', function() {
             return supertest(app)
                 .post('/grid/register')
                 .send(postData)
-                .expect(200, 'OK - Welcome')
-                .end();
+                .expect(200, 'OK - Welcome');
         });
 
         it('must response with a 400 bad request when sending invalid data', function() {
             return supertest(app)
                 .post('/grid/register')
                 .send('nothing')
-                .expect(400, 'Invalid parameters')
-                .end();
+                .expect(400, 'Invalid parameters');
         });
 
         it('should be possible to register the same node twice', function() {
@@ -36,13 +37,11 @@ describe('RegisterServlet', function() {
                 .post('/grid/register')
                 .send(postData)
                 .expect(200, 'OK - Welcome')
-                .end()
                 .then(function() {
                     return supertest(app)
                         .post('/grid/register')
                         .send(postData)
-                        .expect(200, 'OK - Welcome')
-                        .end();
+                        .expect(200, 'OK - Welcome');
                 });
         });
     });

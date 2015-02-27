@@ -11,10 +11,12 @@ var server = require('../server'),
 describe('RCServlet', function() {
     describe('Correctly forward to a node', function() {
         var app, nodeMock;
-        beforeEach(function(done) {
-            app = server(function() {
-                nodeMock = helpers.createAndRegisterWebDriverNodeMock(app, {port: 5590}, done);
-            });
+        beforeEach(function() {
+            return helpers.createAndRegisterNodeMock(q.nfcall(server), {port: 5590})
+                .spread(function(mock, application) {
+                    nodeMock = mock;
+                    app = application;
+                });
         });
 
         afterEach(function() {
@@ -28,8 +30,7 @@ describe('RCServlet', function() {
             // open new session
             return supertest(app)
                 .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox')
-                .expect(200, /OK,\w+/)
-                .end();
+                .expect(200, /OK,\w+/);
         });
 
         it('should clean up registry when sending the complete command', function() {
@@ -37,14 +38,12 @@ describe('RCServlet', function() {
             return supertest(app)
                 .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox')
                 .expect(200, /OK,\w+/)
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getRCSessionId(res);
                     // delete opened session
                     return supertest(app)
                         .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
-                        .expect(200, 'OK')
-                        .end();
+                        .expect(200, 'OK');
                 });
         });
 
@@ -52,27 +51,23 @@ describe('RCServlet', function() {
             // send a command with invalid sessionId
             return supertest(app)
                 .get('/selenium-server/driver?cmd=open&sessionId=4354353453')
-                .expect(404, 'Unknown sessionId: 4354353453')
-                .end();
+                .expect(404, 'Unknown sessionId: 4354353453');
         });
 
         it('should be possible to end a test twice (double teardown bug)', function() {
             // open new session
             return supertest(app)
                 .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox')
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getRCSessionId(res);
                     // delete opened session
                     return supertest(app)
                         .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
-                        .end()
                         .then(function() {
                             // try to delete opened session once again
                             return supertest(app)
                                 .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
-                                .expect(404, 'Unknown sessionId: ' + sessionID)
-                                .end();
+                                .expect(404, 'Unknown sessionId: ' + sessionID);
                         });
                 });
         });
@@ -80,13 +75,15 @@ describe('RCServlet', function() {
 
     describe('handle timeouts during test', function() {
         var app, nodeMock;
-        beforeEach(function(done) {
+        beforeEach(function() {
             registry.TEST_TIMEOUT = 6000;
             registry.NODE_TIMEOUT = 40000;
 
-            app = server(function() {
-                nodeMock = helpers.createAndRegisterWebDriverNodeMock(app, {port: 5590}, done);
-            });
+            return helpers.createAndRegisterNodeMock(q.nfcall(server), {port: 5590})
+                .spread(function(mock, application) {
+                    nodeMock = mock;
+                    app = application;
+                });
         });
 
         afterEach(function() {
@@ -103,7 +100,6 @@ describe('RCServlet', function() {
 
             return supertest(app)
                 .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox')
-                .end()
                 .then(function(res) {
                     var sessionID = helpers.getRCSessionId(res);
                     // 3 seconds wait for the next command
@@ -111,8 +107,7 @@ describe('RCServlet', function() {
                         .then(function() {
                             return supertest(app)
                                 .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
-                                .expect(200, 'OK')
-                                .end();
+                                .expect(200, 'OK');
                         });
                 });
         });
