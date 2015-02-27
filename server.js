@@ -23,13 +23,14 @@ var domain = require('domain');
 var enableDestroy = require('server-destroy');
 
 // servlets
-var notImplementedServlet = require('./lib/servlets/notImplemented');
-var apiHubServlet = require('./lib/servlets/apiHub');
-var apiProxyServlet = require('./lib/servlets/apiProxy');
-var apiTestSessionServlet = require('./lib/servlets/apiTestSession');
-var registerServlet = require('./lib/registerservlet');
-var unregisterServlet = require('./lib/unregisterservlet');
-var welcomeServlet = require('./lib/welcomeservlet');
+var notImplementedServlet = require('./lib/servlets/notImplemented'),
+    welcomeServlet = require('./lib/servlets/welcome'),
+    apiHubServlet = require('./lib/servlets/apiHub'),
+    apiProxyServlet = require('./lib/servlets/apiProxy'),
+    apiTestSessionServlet = require('./lib/servlets/apiTestSession'),
+    registerServlet = require('./lib/servlets/register'),
+    unregisterServlet = require('./lib/servlets/unregister');
+
 var requestHandler = require('./lib/requesthandler');
 
 var registry = require('./lib/registry');
@@ -53,28 +54,29 @@ var servletRoutes = {
     '/wd/hub/session': requestHandler
 };
 
-var parseIncoming = function(req, res, cb) {
-	var srvUrl = url.parse(req.url.toString(), true),
+function parseIncoming(req, res, cb) {
+	var servletUrl = url.parse(req.url.toString(), true),
         servlet;
-	if (servletRoutes[srvUrl.pathname]) {
-		servlet = servletRoutes[srvUrl.pathname];
-		return servlet.handleRequest(req, cb, res);
+
+	if (servletRoutes[servletUrl.pathname]) {
+		servlet = servletRoutes[servletUrl.pathname];
+		return servlet.handleRequest(req, res, cb);
 	} else {
 		// slower lookup of routes
 		for (var route in servletRoutes) {
-			if (route === srvUrl.pathname.substring(0, route.length)) {
+			if (route === servletUrl.pathname.substring(0, route.length)) {
 				servlet = servletRoutes[route];
-				return servlet.handleRequest(req, cb, res);
+				return servlet.handleRequest(req, res, cb);
 			}
 		}
 	}
 
-	if (srvUrl.pathname === '/') {
-		return welcomeServlet.handleRequest(req, cb, res);
+	if (servletUrl.pathname === '/') {
+		return welcomeServlet.handleRequest(req, res, cb);
 	}
 	
 	return cb(new models.Response(400, 'Unable to handle request - Invalid endpoint or request.'));
-};
+}
 
 function main(args, cb) {
     if (typeof args === 'function') {
@@ -134,7 +136,6 @@ function main(args, cb) {
                 res.writeHead(response.statusCode, response.headers);
                 res.end(response.body);
             });
-
         });
 
     enableDestroy(server);
