@@ -26,7 +26,7 @@ describe('WebDriverServlet', function() {
                 });
         });
 
-        it('can open a new browser session on a remote WebDriver node', function() {
+        it('must open a new browser session on a remote WebDriver node', function() {
             // open new session
             return supertest(app)
                 .post('/wd/hub/session')
@@ -35,11 +35,17 @@ describe('WebDriverServlet', function() {
                 .expect('Location', new RegExp('^/wd/hub/session/\\w+$'));
         });
 
-        it('should correctly redirect if the desired version is not a string but an int', function() {
+        it('must open a new browser session if the desired capabilities are not normalized', function() {
             // open new session
             return supertest(app)
                 .post('/wd/hub/session')
-                .send({desiredCapabilities: {browserName: 'firefox', version: 9}})
+                .send({
+                    desiredCapabilities: {
+                        Platform: 'windows',
+                        BrowserName: 'firefox',
+                        Version: 9
+                    }
+                })
                 .expect(302);
         });
 
