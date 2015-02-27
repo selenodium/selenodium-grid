@@ -23,8 +23,10 @@ var domain = require('domain');
 var enableDestroy = require('server-destroy');
 
 // servlets
+var notImplementedServlet = require('./lib/servlets/notImplemented');
 var apiHubServlet = require('./lib/servlets/apiHub');
 var apiProxyServlet = require('./lib/servlets/apiProxy');
+var apiTestSessionServlet = require('./lib/servlets/apiTestSession');
 var requestHandler = require('./lib/requesthandler');
 var registerServlet = require('./lib/registerservlet');
 var unregisterServlet = require('./lib/unregisterservlet');
@@ -39,14 +41,15 @@ var store = require('./lib/store');
 var servletRoutes = {
     '/grid/api/hub': apiHubServlet,
     '/grid/api/proxy': apiProxyServlet,
-    //'/grid/api/testsession': 'not implemented',
-    //'/grid/driver': 'not implemented',
-    //'/grid/resources': 'not implemented',
-    //'/lifecycle-manager': 'not implemented',
+    '/grid/api/testsession': apiTestSessionServlet,
+    '/grid/driver': notImplementedServlet,
+    '/grid/resources': notImplementedServlet,
+    '/lifecycle-manager': notImplementedServlet,
     '/grid/register': registerServlet,
     '/grid/unregister': unregisterServlet,
     '/selenium-server/driver': requestHandler,
-    //'/wd/hub/status': 'not implemented',
+    '/wd/hub/status': notImplementedServlet,
+    '/wd/hub/sessions': notImplementedServlet,
     '/wd/hub/session': requestHandler
 };
 
