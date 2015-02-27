@@ -65,6 +65,9 @@ function createRegisterPost(opts) {
 }
 
 function createNodeMock(opts, cb) {
+    var host = opts.host || '127.0.0.1',
+        port = opts.port || 4444;
+
     return http
         .Server(function(req, res) {
             var uri = req.path,
@@ -90,7 +93,7 @@ function createNodeMock(opts, cb) {
                 }
             }
         })
-        .listen(opts.port || 4444, opts.host || '127.0.0.1')
+        .listen(port, host)
         .then(function(server) {
             // add destroy() method
             enableDestroy(server.node);
@@ -100,6 +103,10 @@ function createNodeMock(opts, cb) {
             };
 
             return server;
+        })
+        .catch(function(err) {
+            err.message = util.format('Could not start server on %s:%s\n', host, port) + err.message;
+            return q.reject(err);
         })
         .nodeify(cb);
 }
@@ -125,11 +132,14 @@ function registerNodeMock(app, opts, cb) {
 }
 
 function unregisterNodeMock(app, mock, cb) {
-    return supertest(app)
-        .get('/grid/unregister?id=' + getServerAddress(mock))
-        .expect(200, 'OK - Bye')
-        .then(function() {
-            return mock.destroy();
+    return q.all([app, mock])
+        .spread(function(app, mock) {
+            return supertest(app)
+                .get('/grid/unregister?id=' + getServerAddress(mock))
+                .expect(200, 'OK - Bye')
+                .then(function() {
+                    return mock.destroy();
+                })
         })
         .nodeify(cb);
 }
