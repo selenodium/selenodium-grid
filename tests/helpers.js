@@ -166,7 +166,13 @@ function getServerAddress(server, path) {
 }
 
 function getWDSessionId(res) {
-    return res.headers.location.replace('/wd/hub/session/', '');
+    if (res.body.sessionId) {
+        return res.body.sessionId;
+    }
+    if (res.status === 302 && res.headers.location) {
+        return res.headers.location.replace('/wd/hub/session/', '');
+    }
+    throw Error('Could not extract session ID from response');
 }
 
 function getRCSessionId(res) {
