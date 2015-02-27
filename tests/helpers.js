@@ -1,5 +1,6 @@
 var q = require('q'),
     http = require('q-io/http'),
+    apps = require('q-io/http-apps'),
     HttpsServer = require('https').Server,
     extend = require('extend'),
     enableDestroy = require('server-destroy'),
@@ -69,30 +70,7 @@ function createNodeMock(opts, cb) {
         port = opts.port || 4444;
 
     return http
-        .Server(function(req, res) {
-            var uri = req.path,
-                sessionID = testData.getSessionID();
-
-            if (determineProtocol(uri) === 'WebDriver') {
-                // WebDriver
-                if (uri.indexOf('/session') > -1 && req.method.toUpperCase() !== 'DELETE') {
-                    res.node.writeHead(302, {'Location': '/wd/hub/session/' + sessionID});
-                    res.node.end();
-                } else if (req.method.toUpperCase() === 'DELETE') {
-                    res.node.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.node.end('');
-                }
-            } else {
-                // RC
-                if (uri.indexOf('getNewBrowserSession') > -1) {
-                    res.node.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.node.end('OK,' + sessionID);
-                } else if (uri.indexOf('testComplete') > -1) {
-                    res.node.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.node.end('OK');
-                }
-            }
-        })
+        .Server(apps.ParseQuery(nodeMockApp))
         .listen(port, host)
         .then(function(server) {
             // add destroy() method
@@ -109,6 +87,43 @@ function createNodeMock(opts, cb) {
             return q.reject(err);
         })
         .nodeify(cb);
+}
+
+function nodeMockApp(req, res) {
+    var uri = req.path,
+        sessionID = testData.getSessionID();
+
+    if (determineProtocol(uri) === 'WebDriver') {
+        // WebDriver
+        if (uri.indexOf('title') > -1) {
+            return apps.content(req.query.title || 'title', 'text/plain', 200);
+        }
+        if (uri.indexOf('/session') > -1 && req.method.toUpperCase() !== 'DELETE') {
+            return location('/wd/hub/session/' + sessionID, 302);
+        }
+        if (req.method.toUpperCase() === 'DELETE') {
+            return apps.content('', 'text/plain', 200);
+        }
+    } else {
+        // RC
+        if (uri.indexOf('cmd=title') > -1) {
+            return apps.content(req.query.title || 'title', 'text/plain', 200);
+        }
+        if (uri.indexOf('getNewBrowserSession') > -1) {
+            return apps.content('OK,' + sessionID, 'text/plain', 200);
+        }
+        if (uri.indexOf('testComplete') > -1) {
+            return apps.content('OK', 'text/plain', 200);
+        }
+    }
+}
+
+function location(location, status) {
+    return {
+        status: status || 301,
+        headers: {Location: location},
+        body: ''
+    }
 }
 
 function createAndRegisterNodeMock(app, opts, cb) {
