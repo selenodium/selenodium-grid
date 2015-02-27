@@ -27,10 +27,10 @@ var notImplementedServlet = require('./lib/servlets/notImplemented');
 var apiHubServlet = require('./lib/servlets/apiHub');
 var apiProxyServlet = require('./lib/servlets/apiProxy');
 var apiTestSessionServlet = require('./lib/servlets/apiTestSession');
-var requestHandler = require('./lib/requesthandler');
 var registerServlet = require('./lib/registerservlet');
 var unregisterServlet = require('./lib/unregisterservlet');
 var welcomeServlet = require('./lib/welcomeservlet');
+var requestHandler = require('./lib/requesthandler');
 
 var registry = require('./lib/registry');
 var store = require('./lib/store');
