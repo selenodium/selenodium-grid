@@ -1,12 +1,16 @@
 var server = require('../server');
-var should = require('should');
-var http = require('http');
-var registry = require('../lib/registry');
-var assert = require('assert');
-var request = require('supertest');
 var requestHandler = require('../lib/requesthandler');
+var registry = require('../lib/registry');
 var models = require('../lib/models');
 var store = require('../lib/store');
+var should = require('should');
+var q = require('q');
+var util = require('util');
+var http = require('http');
+var assert = require('assert');
+var expect = require('must');
+var supertest = require('./q-supertest');
+var helpers = require('./helpers');
 
 var nodes = [];
 var badNode, goodNode;
@@ -14,48 +18,80 @@ var testData = require('./testdata');
 
 describe('RequestHandler', function() {
 
-	describe('It should correctly distinguish between the two protocols', function() {
+    describe('correctly distinguishes between the two protocols', function() {
+        it('must determine an RC request', function() {
+            var proto = requestHandler.determineProtocol('/selenium-server/driver/?cmd=getNewBrowserSession');
+            expect(proto).to.equal('RC');
+        });
 
-		it('receives an RC request', function(done) {
-		  	requestHandler.determineProtocol('/selenium-server/driver/?cmd=getNewBrowserSession&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET).should.equal('RC');
-		  	done();
-		});
+        it('must determine an WebDriver request', function() {
+            var proto = requestHandler.determineProtocol('/wd/hub/session');
+            expect(proto).to.equal('WebDriver');
+        });
+    });
 
-		it('receives an WebDriver request', function(done) {
-		  	requestHandler.determineProtocol('/session').should.equal('WebDriver');
-		  	done();
-		});
-	});
+    describe('encoding test', function() {
+        var app, nodeMock;
+        beforeEach(function() {
+            return helpers.createAndRegisterNodeMock(q.nfcall(server), {port: 5590})
+                .spread(function(mock, application) {
+                    nodeMock = mock;
+                    app = application;
+                });
+        });
 
-	describe("cleanup when a test has started but does not receive any additional steps", function() {
+        afterEach(function() {
+            return helpers.unregisterNodeMock(app, nodeMock)
+                .then(function() {
+                    return q(app).nmcall('destroy');
+                });
+        });
+
+        it('should be possible to send and receive weird characters', function() {
+            return supertest(app)
+                .post('/wd/hub/session')
+                .send({desiredCapabilities: {browserName: 'firefox'}})
+                .then(function(res) {
+                    return helpers.getWDSessionId(res);
+                })
+                .then(function(sessionID) {
+                    var title = 'éñy!';
+                    return supertest(app)
+                        .get(util.format('/wd/hub/session/%s/title?title=%s', sessionID, encodeURIComponent(title)))
+                        .expect(200, {status: 0, value: title});
+                });
+        });
+    });
+
+	xdescribe('cleanup when a test has started but does not receive any additional steps', function() {
 
         var app;
         before(function() {
             app = server();
         });
 
-        after(function() {
-            app.close();
+        after(function(done) {
+            app.destroy(done);
         });
 
         var nodeServerMock;
-        beforeEach(function(d) {
+        beforeEach(function(done) {
 			store.flushdb();
 			registry.TEST_TIMEOUT = 6000;
 			registry.NODE_TIMEOUT = 40000;
-			d();
+			done();
 		});
 
-		afterEach(function(d) {
+		afterEach(function(done) {
 			registry.TEST_TIMEOUT = 90000;
 			this.timeout(30000);
-			request(app)
+			supertest(app)
 				.get('/grid/unregister?id=http://127.0.0.1:5580')
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);
 					res.text.should.equal("OK - Bye");
 					nodeServerMock.close();
-					d();
+					done();
 				});
 		});
 
@@ -79,7 +115,7 @@ describe('RequestHandler', function() {
 
             var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"iexplore","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":5580,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5580","remoteHost":"http://127.0.0.1:5580","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-            request(app)
+            supertest(app)
                 .post('/grid/register')
                 .send(postData)
                 .end(function(err, res) {
@@ -87,7 +123,7 @@ describe('RequestHandler', function() {
                     res.text.should.equal("OK - Welcome");
 
                     // start a new session, but don't do anything after that
-                    request(app)
+                    supertest(app)
                         .get('/selenium-server/driver?cmd=getNewBrowserSession&1=iexplore&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
                         .end(function(err, res) {
                             res.statusCode.should.equal(200);
@@ -101,86 +137,14 @@ describe('RequestHandler', function() {
         });
 	});
 
-	describe("encoding test", function() {
-
+	xdescribe("Retry a test when the start of the test fails", function() {
         var app;
         before(function() {
             app = server();
         });
 
-        after(function() {
-            app.close();
-        });
-
-        var nodeServerMock;
-        beforeEach(function(d) {
-            // mimick an RC node
-            store.flushdb();
-            nodeServerMock = http.createServer(function(req, res) {
-                var url = req.url.toString();
-                var sessionID = testData.getSessionID();
-                if (url.indexOf('getNewBrowserSession') > -1) {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end("OK," + sessionID);
-                } else if (url.indexOf('testComplete') > -1) {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end("OK");
-                } else if (url.indexOf('title') > -1) {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end("éñy!");
-                }
-            }).listen(5581, '127.0.0.1');
-
-            var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"iexplore","maxInstances":1,"version":"9","alias":"IE9"}],"configuration":{"port":5581,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5581","remoteHost":"http://127.0.0.1:5581","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
-
-            request(app)
-                .post('/grid/register')
-                .send(postData)
-                .end(function(err, res) {
-                    res.statusCode.should.equal(200);
-                    res.text.should.equal("OK - Welcome");
-                    d();
-                });
-        });
-
-		afterEach(function(d) {
-			this.timeout(30000);
-			request(app)
-				.get('/grid/unregister?id=http://127.0.0.1:5581')
-				.end(function(err, res) {
-					res.statusCode.should.equal(200);
-					res.text.should.equal("OK - Bye");
-					nodeServerMock.close();
-					d();
-				});
-		});
-
-		it("should be possible to send and receive weird characters", function(done) {
-			request(app)
-				.get('/selenium-server/driver?cmd=getNewBrowserSession&1=iexplore&2=' + encodeURIComponent('http://www.google.com') + '&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
-				.end(function(err, res) {
-					res.statusCode.should.equal(200);
-					var sessionID = res.text.replace("OK,", "");
-
-					request(app)
-						.get('/selenium-server/driver?cmd=title&sessionId=' + sessionID + '&1=' + encodeURIComponent('когда'))
-						.end(function(err, res) {
-							res.statusCode.should.equal(200);
-							res.text.should.equal("éñy!");
-							done();
-						});
-				});
-		});
-	});
-
-	describe("Retry a test when the start of the test fails", function() {
-        var app;
-        before(function() {
-            app = server();
-        });
-
-        after(function() {
-            app.close();
+        after(function(done) {
+            app.destroy(done);
         });
 
         beforeEach(function(d) {
@@ -199,7 +163,7 @@ describe('RequestHandler', function() {
 
             var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"firefox","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":5583,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5583","remoteHost":"http://127.0.0.1:5583","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-            request(app)
+            supertest(app)
                 .post('/grid/register')
                 .send(postData)
                 .end(function(err, res) {
@@ -220,7 +184,7 @@ describe('RequestHandler', function() {
 
                     var postData = '{"class":"org.openqa.grid.common.RegistrationRequest","capabilities":[{"platform":"WINDOWS","seleniumProtocol":"Selenium","browserName":"firefox","maxInstances":1,"version":"9","alias":"FF9"}],"configuration":{"port":5584,"nodeConfig":"config.json","host":"127.0.0.1","cleanUpCycle":10000,"browserTimeout":20000,"hubHost":"10.0.1.6","registerCycle":5000,"debug":"","hub":"http://10.0.1.6:4444/grid/register","log":"test.log","url":"http://127.0.0.1:5584","remoteHost":"http://127.0.0.1:5584","register":true,"proxy":"org.openqa.grid.selenium.proxy.DefaultRemoteProxy","maxSession":1,"role":"node","hubPort":4444}}';
 
-                    request(app)
+                    supertest(app)
                         .post('/grid/register')
                         .send(postData)
                         .end(function(err, res) {
@@ -238,13 +202,13 @@ describe('RequestHandler', function() {
 
 		afterEach(function(d) {
 			this.timeout(30000);
-			request(app)
+			supertest(app)
 				.get('/grid/unregister?id=http://127.0.0.1:5583')
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);
 					res.text.should.equal("OK - Bye");
 					badNode.close();
-					request(app)
+					supertest(app)
 						.get('/grid/unregister?id=http://127.0.0.1:5584')
 						.end(function(err, res) {
 							res.statusCode.should.equal(200);
@@ -257,7 +221,7 @@ describe('RequestHandler', function() {
 
 		it('should retry a test when the test fails starting a browser', function(done) {
 			this.timeout(30000);
-			request(app)
+			supertest(app)
 				.get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
 				.end(function(err, res) {
 					res.statusCode.should.equal(200);

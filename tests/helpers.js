@@ -67,10 +67,14 @@ function createRegisterPost(opts) {
 
 function createNodeMock(opts, cb) {
     var host = opts.host || '127.0.0.1',
-        port = opts.port || 4444;
+        port = opts.port || 4444,
+        app = nodeMockApp;
+
+    app = apps.ParseQuery(app);
+    app = apps.HandleJsonResponses(app);
 
     return http
-        .Server(apps.ParseQuery(nodeMockApp))
+        .Server(app)
         .listen(port, host)
         .then(function(server) {
             // add destroy() method
@@ -91,18 +95,30 @@ function createNodeMock(opts, cb) {
 
 function nodeMockApp(req, res) {
     var uri = req.path,
-        sessionID = testData.getSessionID();
+        sessionId = testData.getSessionID();
 
     if (determineProtocol(uri) === 'WebDriver') {
         // WebDriver
         if (uri.indexOf('title') > -1) {
-            return apps.content(req.query.title || 'title', 'text/plain', 200);
+            return {
+                status: 200,
+                headers: {},
+                data: {status: 0, value: req.query.title || 'title'}
+            };
         }
         if (uri.indexOf('/session') > -1 && req.method.toUpperCase() !== 'DELETE') {
-            return location('/wd/hub/session/' + sessionID, 302);
+            return {
+                status: 200,
+                headers: {},
+                data: {sessionId: sessionId, status: 0}
+            };
         }
         if (req.method.toUpperCase() === 'DELETE') {
-            return apps.content('', 'text/plain', 200);
+            return {
+                status: 200,
+                headers: {},
+                data: {status: 0}
+            };
         }
     } else {
         // RC
@@ -110,7 +126,7 @@ function nodeMockApp(req, res) {
             return apps.content(req.query.title || 'title', 'text/plain', 200);
         }
         if (uri.indexOf('getNewBrowserSession') > -1) {
-            return apps.content('OK,' + sessionID, 'text/plain', 200);
+            return apps.content('OK,' + sessionId, 'text/plain', 200);
         }
         if (uri.indexOf('testComplete') > -1) {
             return apps.content('OK', 'text/plain', 200);

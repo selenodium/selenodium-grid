@@ -31,8 +31,14 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
-                .expect(302)
-                .expect('Location', new RegExp('^/wd/hub/session/\\w+$'));
+                .expect('Content-Type', 'application/json')
+                .expect(200)
+                .then(function(res) {
+                    var body = res.body;
+                    expect(body.sessionId).to.match(/\d+/);
+                    expect(body.status).to.equal(0);
+                    expect(body.value).to.eql({});
+                });
         });
 
         it('must open a new browser session if the desired capabilities are not normalized', function() {
@@ -46,10 +52,10 @@ describe('WebDriverServlet', function() {
                         Version: 9
                     }
                 })
-                .expect(302);
+                .expect(200);
         });
 
-        it('should clean up registry when sending the delete command', function() {
+        it('must clean up registry when sending the delete command', function() {
             // open new session
             return supertest(app)
                 .post('/wd/hub/session')
@@ -59,8 +65,7 @@ describe('WebDriverServlet', function() {
                     // delete opened session
                     return supertest(app)
                         .delete('/wd/hub/session/' + sessionID)
-                        .send({desiredCapabilities: {browserName: 'firefox'}})
-                        .expect(200, '');
+                        .expect(200, {status: 0});
                 });
 
                 // TODO: should move out to a separate registry test
@@ -92,7 +97,7 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session/4354353453/url')
                 .send({url: 'http://testingbot.com'})
-                .expect(500, 'Unknown sessionId: 4354353453');
+                .expect(404, /Unknown sessionId: 4354353453/);
 
             // TODO: should move out to a separate registry test
             //registry.getSessionById('4354353453', function(session) {
@@ -110,14 +115,15 @@ describe('WebDriverServlet', function() {
                     var sessionID = helpers.getWDSessionId(res);
                     // delete opened session
                     return supertest(app)
-                        .delete('/wd/hub/session/' + sessionID);
+                        .delete('/wd/hub/session/' + sessionID)
+                        .expect(200);
                 })
                 .then(function(res) {
                     // open another new session
                     return supertest(app)
                         .post('/wd/hub/session')
                         .send({desiredCapabilities: {browserName: 'firefox'}})
-                        .expect(302);
+                        .expect(200);
                 })
         });
 
@@ -131,12 +137,12 @@ describe('WebDriverServlet', function() {
                     // delete opened session
                     return supertest(app)
                         .delete('/wd/hub/session/' + sessionID)
-                        .expect(200, '')
+                        .expect(200, {status: 0})
                         .then(function(res) {
                             // try to delete opened session once again
                             supertest(app)
                                 .delete('/wd/hub/session/' + sessionID)
-                                .expect(500, 'Unknown sessionId: ' + sessionID);
+                                .expect(500, new RegExp('Unknown sessionId: ' + sessionID));
                         });
                 });
 
@@ -192,7 +198,7 @@ describe('WebDriverServlet', function() {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
-                .expect(302)
+                .expect(200)
                 .then(function(res) {
                     var sessionID = helpers.getWDSessionId(res);
                     // 30 seconds wait for the next command
@@ -201,7 +207,7 @@ describe('WebDriverServlet', function() {
                             return supertest(app)
                                 .post('/wd/hub/session/' + sessionID + '/url')
                                 .send({url: 'http://testingbot.com'})
-                                .expect(500, 'Unknown sessionId: ' + sessionID);
+                                .expect(404, new RegExp('Unknown sessionId: ' + sessionID));
                         });
                 });
 

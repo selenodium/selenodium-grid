@@ -29,8 +29,10 @@ var notImplementedServlet = require('./lib/servlets/notImplemented'),
     apiProxyServlet = require('./lib/servlets/apiProxy'),
     apiTestSessionServlet = require('./lib/servlets/apiTestSession'),
     registerServlet = require('./lib/servlets/register'),
-    unregisterServlet = require('./lib/servlets/unregister');
+    unregisterServlet = require('./lib/servlets/unregister'),
+    requestServlet = require('./lib/servlets/request');
 
+// TODO: will be replaced by requestServlet
 var requestHandler = require('./lib/requesthandler');
 
 var registry = require('./lib/registry');
@@ -51,7 +53,7 @@ var servletRoutes = {
     '/selenium-server/driver': requestHandler,
     '/wd/hub/status': notImplementedServlet,
     '/wd/hub/sessions': notImplementedServlet,
-    '/wd/hub/session': requestHandler
+    '/wd/hub/session': requestServlet
 };
 
 function parseIncoming(req, res, cb) {
@@ -133,6 +135,9 @@ function main(args, cb) {
             });
 
             parseIncoming(req, res, function(response) {
+                if (!response) {
+                    return;
+                }
                 res.writeHead(response.statusCode, response.headers);
                 res.end(response.body);
             });
