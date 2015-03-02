@@ -32,9 +32,6 @@ var notImplementedServlet = require('./lib/servlets/notImplemented'),
     unregisterServlet = require('./lib/servlets/unregister'),
     requestServlet = require('./lib/servlets/request');
 
-// TODO: will be replaced by requestServlet
-var requestHandler = require('./lib/requesthandler');
-
 var registry = require('./lib/registry');
 var store = require('./lib/store');
 var models = require('./lib/models');
@@ -50,7 +47,7 @@ var servletRoutes = {
     '/lifecycle-manager': notImplementedServlet,
     '/grid/register': registerServlet,
     '/grid/unregister': unregisterServlet,
-    '/selenium-server/driver': requestHandler,
+    '/selenium-server/driver': requestServlet,
     '/wd/hub/status': notImplementedServlet,
     '/wd/hub/sessions': notImplementedServlet,
     '/wd/hub/session': requestServlet

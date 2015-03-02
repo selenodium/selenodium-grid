@@ -120,17 +120,24 @@ function nodeMockApp(req, res) {
                 data: {status: 0}
             };
         }
+        return {
+            status: 500,
+            headers: {},
+            data: {status: 13}
+        };
     } else {
         // RC
-        if (uri.indexOf('cmd=title') > -1) {
+        var cmd = req.query.cmd;
+        if (cmd === 'title') {
             return apps.content(req.query.title || 'title', 'text/plain', 200);
         }
-        if (uri.indexOf('getNewBrowserSession') > -1) {
+        if (cmd == 'getNewBrowserSession') {
             return apps.content('OK,' + sessionId, 'text/plain', 200);
         }
-        if (uri.indexOf('testComplete') > -1) {
+        if (cmd === 'testComplete') {
             return apps.content('OK', 'text/plain', 200);
         }
+        return app.content('ERROR: Unknown error', 'text/plain', 500);
     }
 }
 
@@ -192,7 +199,7 @@ function getWDSessionId(res) {
 }
 
 function getRCSessionId(res) {
-    return res.text.replace('OK,', '');
+    return res.text.substring(3);
 }
 
 function determineProtocol(url) {

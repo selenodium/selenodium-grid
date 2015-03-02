@@ -39,10 +39,10 @@ describe('RCServlet', function() {
                 .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox')
                 .expect(200, /OK,\w+/)
                 .then(function(res) {
-                    var sessionID = helpers.getRCSessionId(res);
+                    var sessionId = helpers.getRCSessionId(res);
                     // delete opened session
                     return supertest(app)
-                        .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
+                        .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionId)
                         .expect(200, 'OK');
                 });
         });
@@ -51,7 +51,7 @@ describe('RCServlet', function() {
             // send a command with invalid sessionId
             return supertest(app)
                 .get('/selenium-server/driver?cmd=open&sessionId=4354353453')
-                .expect(404, 'Unknown sessionId: 4354353453');
+                .expect(404, /Unknown sessionId: 4354353453/);
         });
 
         it('should be possible to end a test twice (double teardown bug)', function() {
@@ -59,15 +59,15 @@ describe('RCServlet', function() {
             return supertest(app)
                 .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox')
                 .then(function(res) {
-                    var sessionID = helpers.getRCSessionId(res);
+                    var sessionId = helpers.getRCSessionId(res);
                     // delete opened session
                     return supertest(app)
-                        .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
+                        .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionId)
                         .then(function() {
                             // try to delete opened session once again
                             return supertest(app)
-                                .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
-                                .expect(404, 'Unknown sessionId: ' + sessionID);
+                                .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionId)
+                                .expect(404, new RegExp('Unknown sessionId: ' + sessionId));
                         });
                 });
         });
@@ -101,12 +101,12 @@ describe('RCServlet', function() {
             return supertest(app)
                 .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox')
                 .then(function(res) {
-                    var sessionID = helpers.getRCSessionId(res);
+                    var sessionId = helpers.getRCSessionId(res);
                     // 3 seconds wait for the next command
                     return q.delay(3000)
                         .then(function() {
                             return supertest(app)
-                                .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionID)
+                                .get('/selenium-server/driver?cmd=testComplete&sessionId=' + sessionId)
                                 .expect(200, 'OK');
                         });
                 });
