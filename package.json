@@ -1,18 +1,23 @@
 {
-  "name": "node-seleniumgrid",
-  "description": "A Selenium grid built in NodeJS used in production on TestingBot.com",
-  "private": false,
+  "name": "selenodium-grid",
+  "description": "A Selenium Grid reimplementation in NodeJS",
   "tags": [
     "selenium",
     "grid"
   ],
-  "author": {
+  "authors": [
+    {
+      "name": "Sergey Belov",
+      "email": "peimei@ya.ru"
+    },
+    {
     "name": "Testingbot",
     "email": "info@testingbot.com"
-  },
+    }
+  ],
   "main": "./server.js",
   "bin": {
-    "node-seleniumgrid": "./lib/bin.js"
+    "selenodium-grid": "./lib/bin.js"
   },
   "version": "0.1.0",
   "dependencies": {
@@ -39,13 +44,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/testingbot/node-seleniumgrid.git"
+    "url": "git://github.com/selenodium/selenodium-grid.git"
   },
   "bugs": {
-    "url": "https://github.com/testingbot/node-seleniumgrid/issues"
+    "url": "https://github.com/selenodium/selenodium-grid/issues"
   },
   "engines": {
-    "node": ">= 0.6.15"
+    "node": ">= 0.10"
   },
   "scripts": {
     "test": "mocha tests/*.js"
