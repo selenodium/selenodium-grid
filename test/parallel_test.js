@@ -57,7 +57,7 @@ function runTests(app, count, delay) {
             return supertest(app)
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
-                .expect(302)
+                .expect(200)
                 .then(function(res) {
                     // return sessionID in 500 ms
                     return q.delay(helpers.getWDSessionId(res), delay);
@@ -66,7 +66,7 @@ function runTests(app, count, delay) {
                     // stop session
                     return supertest(app)
                         .delete('/wd/hub/session/' + sessionID)
-                        .expect(200, '');
+                        .expect(200, {status: 0});
                 });
         })
     );
