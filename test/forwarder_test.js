@@ -9,7 +9,7 @@ var models = require('../lib/models');
 var store = require('../lib/store');
 var testData = require('./testdata');
 
-describe('ForwarderServlet', function() {
+xdescribe('ForwarderServlet', function() {
     var app;
     before(function() {
         app = server();
