@@ -164,22 +164,21 @@ function main(args, cb) {
         })
         .listen(4446, '127.0.0.1');*/
 
-	server.on('clientError', function(exception, socket) {
+	server.on('clientError', function(err, sock) {
 	    try {
-	    	if (socket.parser.incoming.url === '/grid/register') {
+	    	if (sock.parser.incoming.url === '/grid/register') {
 	    		return;
 	    	}
 	    } catch (e) {}
 
-	    if (exception.message.indexOf('ECONNRESET') > -1) {
-	    	log.debug(exception);
+	    if (err.message.indexOf('ECONNRESET') > -1) {
+	    	log.debug(err);
 	    	return;
 	    }
 	    
 	    log.warn('!error: client error');
-	    log.warn(exception);
-	    log.warn(exception.stack);
-	    log.warn(socket);
+	    log.warn(err.stack);
+	    log.warn(sock);
 	});
 
 	process.on('SIGTERM', function() {
@@ -196,9 +195,9 @@ function main(args, cb) {
 		server.close();
 	});
 
-	process.on('uncaughtException', function(err) {
+	// TODO: Move out of the server() code
+    process.on('uncaughtException', function(err) {
 		log.warn('! Uncaught Exception occurred');
-		log.warn(err);
 		log.warn(err.stack);
 	});
 
