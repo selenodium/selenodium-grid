@@ -53,6 +53,6 @@
     "node": ">= 0.10"
   },
   "scripts": {
-    "test": "mocha tests/*.js"
+    "test": "mocha"
   }
 }
