@@ -27,6 +27,8 @@
     "extend": "^2.0.0",
     "inherit": "^2.2.2",
     "lodash": "^3.3.1",
+    "luster": "^0.5.3",
+    "luster-guard": "^0.4.0",
     "q": "^1.1.2",
     "q-io": "^1.11.6",
     "qs": "^2.3.3",
@@ -53,6 +55,7 @@
     "node": ">= 0.10"
   },
   "scripts": {
+    "start": "luster",
     "test": "mocha"
   }
 }
