@@ -36,10 +36,12 @@
     "tracer": "*"
   },
   "devDependencies": {
+    "coveralls": "^2.11.2",
     "mocha": "^2.1.0",
     "must": "^0.12.0",
     "should": "^5.0.0",
-    "supertest": "^0.15.0"
+    "supertest": "^0.15.0",
+    "unit-coverage": "^3.4.0"
   },
   "directories": {
     "lib": "./lib"
@@ -54,8 +56,29 @@
   "engines": {
     "node": ">= 0.10"
   },
+  "unit-coverage": {
+    "common": [
+      "--set",
+      "simple",
+      "--sources",
+      "lib/**/*.js",
+      "--exclude",
+      "node_modules/**",
+      "--tests",
+      "test/**/*.js",
+      "--additional",
+      "server.js",
+      "--additional",
+      "lib",
+      "--additional",
+      "test"
+    ]
+  },
   "scripts": {
     "start": "luster",
-    "test": "mocha"
+    "test": "mocha",
+    "coverage": "unit-coverage run --quiet --profile common",
+    "coverage-html": "npm run coverage -- --reporter html --output coverage.html",
+    "travis": "npm test && npm run coverage -- --reporter lcov | coveralls"
   }
 }
