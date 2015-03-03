@@ -1,8 +1,17 @@
 var server = require('../server'),
+    store = require('../lib/store'),
     supertest = require('./q-supertest'),
     helpers = require('./helpers');
 
 describe('RegisterServlet', function() {
+    before(function(done) {
+        store.flushdb(done);
+    });
+
+    after(function(done) {
+        store.flushdb(done);
+    });
+
     describe('POST /grid/register', function() {
         var app;
         before(function() {
@@ -17,7 +26,7 @@ describe('RegisterServlet', function() {
         });
 
         it('must be possible to register node', function() {
-            var postData = helpers.createRegisterPost();
+            var postData = helpers.createRegisterPost({port: 5560});
             return supertest(app)
                 .post('/grid/register')
                 .send(postData)
@@ -32,7 +41,7 @@ describe('RegisterServlet', function() {
         });
 
         it('should be possible to register the same node twice', function() {
-            var postData = helpers.createRegisterPost();
+            var postData = helpers.createRegisterPost({port: 5560});
             return supertest(app)
                 .post('/grid/register')
                 .send(postData)

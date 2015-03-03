@@ -9,6 +9,14 @@ var server = require('../server'),
     helpers = require('./helpers');
 
 describe('RCServlet', function() {
+    before(function(done) {
+        store.flushdb(done);
+    });
+
+    after(function(done) {
+        store.flushdb(done);
+    });
+
     describe('Correctly forward to a node', function() {
         var app, nodeMock;
         beforeEach(function() {

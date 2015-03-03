@@ -17,6 +17,13 @@ var badNode, goodNode;
 var testData = require('./testdata');
 
 describe('RequestHandler', function() {
+    before(function(done) {
+        store.flushdb(done);
+    });
+
+    after(function(done) {
+        store.flushdb(done);
+    });
 
     describe('correctly distinguishes between the two protocols', function() {
         it('must determine an RC request', function() {

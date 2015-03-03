@@ -20,12 +20,15 @@ describe('apiProxyServlet', function() {
 
     describe('GET /grid/api/proxy', function() {
         describe('simple', function() {
+            var nodeOpts = {port: 5560},
+                nodeUrl = helpers.createNodeUrl(nodeOpts);
+
             it('must respond with error if the node was not registered first', function() {
                 // query for the node id
                 return supertest(app)
-                    .get('/grid/api/proxy?id=http://127.0.0.1:5560')
+                    .get('/grid/api/proxy?id=' + nodeUrl)
                     .expect(404, {
-                        msg: 'Cannot find proxy with ID=http://127.0.0.1:5560 in the registry.',
+                        msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
                         success: false
                     });
             });
@@ -34,16 +37,22 @@ describe('apiProxyServlet', function() {
                 // register node on the grid
                 return supertest(app)
                     .post('/grid/register')
-                    .send(helpers.createRegisterPost({port: 5560}))
+                    .send(helpers.createRegisterPost(nodeOpts))
                     .expect(200, 'OK - Welcome')
                     .then(function() {
                         // query for the node id
                         return supertest(app)
-                            .get('/grid/api/proxy?id=http://127.0.0.1:5560')
+                            .get('/grid/api/proxy?id=' + nodeUrl)
                             .expect(200, {
                                 msg: 'Proxy found!',
                                 success: true
                             });
+                    })
+                    .then(function() {
+                        // unregister node from the grid
+                        return supertest(app)
+                            .post('/grid/unregister?id=' + nodeUrl)
+                            .expect(200, 'OK - Bye');
                     });
             });
         });
@@ -59,12 +68,22 @@ describe('apiProxyServlet', function() {
                 registry.NODE_TIMEOUT = nodeTimeoutOld;
             });
 
+            var nodeOpts = {port: 5560},
+                nodeUrl = helpers.createNodeUrl(nodeOpts);
+
             beforeEach(function() {
                 // register node on the grid
                 return supertest(app)
                     .post('/grid/register')
-                    .send(helpers.createRegisterPost({port: 5560}))
+                    .send(helpers.createRegisterPost(nodeOpts))
                     .expect(200, 'OK - Welcome');
+            });
+
+            afterEach(function() {
+                // unregister node from the grid
+                return supertest(app)
+                    .post('/grid/unregister?id=' + nodeUrl)
+                    .expect(200, 'OK - Bye');
             });
 
             it('must return a not found response if the node has not shown up again in NODE_TIMEOUT time', function() {
@@ -74,9 +93,9 @@ describe('apiProxyServlet', function() {
                     .then(function() {
                         return supertest(app)
                             // query for the node id
-                            .get('/grid/api/proxy?id=http://127.0.0.1:5560')
+                            .get('/grid/api/proxy?id=' + nodeUrl)
                             .expect(404, {
-                                msg: 'Cannot find proxy with ID=http://127.0.0.1:5560 in the registry.',
+                                msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
                                 success: false
                             });
                     });
@@ -90,17 +109,17 @@ describe('apiProxyServlet', function() {
                     .then(function() {
                         // query for the node id
                         return supertest(app)
-                            .get('/grid/api/proxy?id=http://127.0.0.1:5560')
+                            .get('/grid/api/proxy?id=' + nodeUrl)
                             .expect(404, {
-                                msg: 'Cannot find proxy with ID=http://127.0.0.1:5560 in the registry.',
+                                msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
                                 success: false
-                            })
+                            });
                     })
                     .then(function() {
                         // register node on the grid
                         return supertest(app)
                             .post('/grid/register')
-                            .send(helpers.createRegisterPost({port: 5560}))
+                            .send(helpers.createRegisterPost(nodeOpts))
                             .expect(200, 'OK - Welcome');
                     });
             });

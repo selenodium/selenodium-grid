@@ -1,12 +1,21 @@
 var server = require('../server'),
+    store = require('../lib/store'),
     supertest = require('./q-supertest'),
     helpers = require('./helpers'),
     q = require('q'),
     _ = require('lodash');
 
 describe('Parallel Tests', function() {
+    before(function(done) {
+        store.flushdb(done);
+    });
+
+    after(function(done) {
+        store.flushdb(done);
+    });
+
     describe('parallel tests', function() {
-        var nodesCount = 10,
+        var nodesCount = 5,
             app,
             nodeMocks;
 
@@ -24,26 +33,31 @@ describe('Parallel Tests', function() {
         });
 
         afterEach(function() {
+            this.timeout(10000);
+
             return nodeMocks
                 .invoke('map', function(mock) {
                     return helpers.unregisterNodeMock(app, mock);
                 })
+                .all()
+                .delay(1000)
                 .then(function() {
                     return q(app).nmcall('destroy');
-                });
+                })
+                .delay(1000);
         });
 
         it('must be possible to run tests in parallel across different nodes at once', function() {
-            this.timeout(5000);
+            this.timeout(10000);
 
-            return runTests(app, 10);
+            return runTests(app, nodesCount);
         });
 
         it('must be possible to start more tests in parallel than the number of nodes available, all tests must succeed', function() {
-            this.timeout(5000);
+            this.timeout(10000);
 
-            // we ask 20 but we only have 10 nodes available
-            return runTests(app, 20);
+            // we ask 15 but we only have 5 nodes available
+            return runTests(app, nodesCount * 3);
         });
 
     });
@@ -59,13 +73,14 @@ function runTests(app, count, delay) {
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .expect(200)
                 .then(function(res) {
-                    // return sessionID in 500 ms
-                    return q.delay(helpers.getWDSessionId(res), delay);
+                    return helpers.getWDSessionId(res);
                 })
-                .then(function(sessionID) {
+                // return sessionId in 500 ms
+                .delay(delay)
+                .then(function(sessionId) {
                     // stop session
                     return supertest(app)
-                        .delete('/wd/hub/session/' + sessionID)
+                        .delete('/wd/hub/session/' + sessionId)
                         .expect(200, {status: 0});
                 });
         })

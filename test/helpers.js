@@ -22,23 +22,23 @@ function createRegisterPost(opts) {
             alias: 'FF9'
         }],
         configuration: {
-            port: 5590,
             nodeConfig: 'config.json',
             host: '127.0.0.1',
+            port: 5590,
+            url: 'http://127.0.0.1:5590',
+            remoteHost: 'http://127.0.0.1:5590',
+            role: 'node',
+            hub: 'http://10.0.1.6:4444/grid/register',
+            hubHost: '10.0.1.6',
+            hubPort: 4444,
+            register: true,
             cleanUpCycle: 10000,
             browserTimeout: 20000,
-            hubHost: '10.0.1.6',
             registerCycle: 5000,
-            debug: '',
-            hub: 'http://10.0.1.6:4444/grid/register',
-            log: 'test.log',
-            url: 'http://127.0.0.1:4444',
-            remoteHost: 'http://127.0.0.1:4444',
-            register: true,
             proxy: 'org.openqa.grid.selenium.proxy.DefaultRemoteProxy',
             maxSession: 1,
-            role: 'node',
-            hubPort: 4444
+            log: 'test.log',
+            debug: ''
         }
     };
 
@@ -63,6 +63,12 @@ function createRegisterPost(opts) {
     res.configuration = extend(res.configuration, opts);
 
     return res;
+}
+
+function createNodeUrl(opts) {
+    // do not mutate source opts
+    opts = extend({host: '127.0.0.1', port: 5590}, opts);
+    return 'http://' + opts.host + ':' + opts.port;
 }
 
 function createNodeMock(opts, cb) {
@@ -207,6 +213,7 @@ function determineProtocol(url) {
 }
 
 exports.createRegisterPost = createRegisterPost;
+exports.createNodeUrl = createNodeUrl;
 exports.createNodeMock = createNodeMock;
 exports.createAndRegisterNodeMock = createAndRegisterNodeMock;
 exports.unregisterNodeMock = unregisterNodeMock;
