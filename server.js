@@ -84,7 +84,7 @@ function main(args, cb) {
     }
     store.setConfig(args || {});
 
-	var port = parseInt(process.argv[2], 10) || 4444,
+	var port = parseInt(process.argv[2], 10) || process.env.port || 4444,
         server = http.createServer(function(req, res) {
             req.on('close', function(err) {
                 log.warn('!error: on close');
