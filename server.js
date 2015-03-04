@@ -187,7 +187,7 @@ function main(args, cb) {
         if (registry.pendingRequests.length > 0) {
 			log.warn('Can\'t stop hub just yet, pending requests!');
 			// try now
-			registry.processPendingRequest();
+			registry.processPendingRequest().done();
 			return;
 		}
 

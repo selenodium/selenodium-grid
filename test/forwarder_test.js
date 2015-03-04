@@ -141,13 +141,13 @@ xdescribe('ForwarderServlet', function() {
 
             var processed = 0;
             for (var i = 0; i < nodes.length; i++) {
-                store.getAvailableNodes(function(nodes) {
+                store.getAvailableNodes(function(err, nodes) {
                     var nodeLength = nodes.length;
                     request(app)
                         .get('/selenium-server/driver?cmd=getNewBrowserSession&1=firefox&client_key=' + testData.CLIENT_KEY + "&client_secret=" + testData.CLIENT_SECRET)
                         .end(function(err, res) {
                             var sessionID = res.text.replace('OK,', '');
-                            store.getAvailableNodes(function(nodes) {
+                            store.getAvailableNodes(function(err, nodes) {
                                 assert.ok(nodes.length < nodeLength);
 
                                 // stop session, the next one should start
@@ -294,7 +294,7 @@ xdescribe('ForwarderServlet', function() {
 
                     var sessionID = res.text.replace('OK,', '');
                     // should be in the registry
-                    registry.getSessionById(sessionID, function(session) {
+                    registry.getSessionById(sessionID, function(err, session) {
                         session.should.be.an.instanceof(models.Session);
 
                         // the node is suddenly unreachable
@@ -322,7 +322,7 @@ xdescribe('ForwarderServlet', function() {
 
                     var sessionID = res.text.replace('OK,', '');
                     // should be in the registry
-                    registry.getSessionById(sessionID, function(session) {
+                    registry.getSessionById(sessionID, function(err, session) {
                         session.should.be.an.instanceof(models.Session);
 
                         // the node is suddenly unreachable

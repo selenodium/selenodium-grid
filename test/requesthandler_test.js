@@ -112,7 +112,7 @@ describe('RequestHandler', function() {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end("OK," + sessionID);
                 } else if (url.indexOf('testComplete') > -1) {
-                    registry.getSessionById(sessionID, function(session) {
+                    registry.getSessionById(sessionID, function(err, session) {
                         assert.equal(session, null);
                         // testComplete should be received for this test to succeed
                         done();
@@ -136,7 +136,7 @@ describe('RequestHandler', function() {
                             res.statusCode.should.equal(200);
                             var sessionID = res.text.replace("OK,", "");
                             // should be in the registry
-                            registry.getSessionById(sessionID, function(session) {
+                            registry.getSessionById(sessionID, function(err, session) {
                                 session.should.be.an.instanceof(models.Session);
                             });
                         });
