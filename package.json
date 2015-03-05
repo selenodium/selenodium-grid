@@ -58,8 +58,6 @@
   },
   "unit-coverage": {
     "common": [
-      "--set",
-      "simple",
       "--sources",
       "lib/**/*.js",
       "--exclude",
