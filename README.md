@@ -1,5 +1,7 @@
-node-seleniumgrid
-=================
+selenodium-grid
+===============
+
+[![Build Status](https://travis-ci.org/selenodium/selenodium-grid.svg?branch=dev)](https://travis-ci.org/selenodium/selenodium-grid) [![Coverage Status](https://coveralls.io/repos/selenodium/selenodium-grid/badge.svg?branch=dev)](https://coveralls.io/r/selenodium/selenodium-grid?branch=dev) [![Dependency Status](https://david-dm.org/selenodium/selenodium-grid.svg)](https://david-dm.org/selenodium/selenodium-grid) [![devDependency Status](https://david-dm.org/selenodium/selenodium-grid/dev-status.svg)](https://david-dm.org/selenodium/selenodium-grid#info=devDependencies)
 
 Selenium Hub/Grid built in nodeJS and used in production on [TestingBot.com](http://testingbot.com).
 
