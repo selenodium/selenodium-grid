@@ -155,13 +155,12 @@ function location(location, status) {
     }
 }
 
-function createAndRegisterNodeMock(app, opts, cb) {
+function createAndRegisterNodeMock(app, opts) {
     return createNodeMock(opts)
-        .then(function(server) {
+        .then(function(mock) {
             return registerNodeMock(app, opts)
-                .thenResolve([server, app]);
-        })
-        .nodeify(cb);
+                .thenResolve([mock, app]);
+        });
 }
 
 function registerNodeMock(app, opts, cb) {

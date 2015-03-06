@@ -4,23 +4,24 @@ var server = require('../server'),
     supertest = require('./q-supertest');
 
 describe('apiHubServlet', function() {
-    var app;
+    var app, tester;
     before(function() {
-        return server()
-            .then(function(application) {
-                app = application;
+        return server().listen(0)
+            .then(function(server) {
+                app = server;
+                tester = supertest(server);
             });
     });
 
-    after(function(done) {
-        app.destroy(done);
+    after(function() {
+        return app.destroy();
     });
 
 	describe('GET /grid/api/hub', function() {
 		it('must respond with the hub configuration', function() {
             return fs.read(path.join(__dirname, '..', 'config.json'))
                 .then(function(data) {
-                    return supertest(app)
+                    return tester
                         .get('/grid/api/hub/')
                         .expect(200, JSON.parse(data.toString()))
                         .expect('Content-Type', /json/);

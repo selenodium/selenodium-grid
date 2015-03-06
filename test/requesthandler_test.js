@@ -38,24 +38,25 @@ describe('RequestHandler', function() {
     });
 
     describe('encoding test', function() {
-        var app, nodeMock;
+        var app, nodeMock, tester;
         beforeEach(function() {
-            return helpers.createAndRegisterNodeMock(q.nfcall(server), {port: 5590})
-                .spread(function(mock, application) {
+            return helpers.createAndRegisterNodeMock(server().listen(0), {port: 5590})
+                .spread(function(mock, server) {
                     nodeMock = mock;
-                    app = application;
+                    app = server;
+                    tester = supertest(server);
                 });
         });
 
         afterEach(function() {
             return helpers.unregisterNodeMock(app, nodeMock)
                 .then(function() {
-                    return q(app).nmcall('destroy');
+                    return app.destroy();
                 });
         });
 
         it('should be possible to send and receive weird characters', function() {
-            return supertest(app)
+            return tester
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .then(function(res) {
@@ -63,7 +64,7 @@ describe('RequestHandler', function() {
                 })
                 .then(function(sessionID) {
                     var title = 'éñy!';
-                    return supertest(app)
+                    return tester
                         .get(util.format('/wd/hub/session/%s/title?title=%s', sessionID, encodeURIComponent(title)))
                         .expect(200, {status: 0, value: title});
                 });
@@ -72,13 +73,18 @@ describe('RequestHandler', function() {
 
 	xdescribe('cleanup when a test has started but does not receive any additional steps', function() {
 
-        var app;
+        var app, tester;
         before(function() {
-            app = server();
+            return server()
+                .listen(0)
+                .then(function(server) {
+                    app = server;
+                    tester = supertest(server);
+                });
         });
 
-        after(function(done) {
-            app.destroy(done);
+        after(function() {
+            return app.destroy();
         });
 
         var nodeServerMock;
@@ -145,13 +151,18 @@ describe('RequestHandler', function() {
 	});
 
 	xdescribe("Retry a test when the start of the test fails", function() {
-        var app;
+        var app, tester;
         before(function() {
-            app = server();
+            return server()
+                .listen(0)
+                .then(function(server) {
+                    app = server;
+                    tester = supertest(server);
+                });
         });
 
-        after(function(done) {
-            app.destroy(done);
+        after(function() {
+            return app.destroy();
         });
 
         beforeEach(function(d) {

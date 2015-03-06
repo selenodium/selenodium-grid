@@ -1,21 +1,21 @@
 var server = require('../server'),
-    expect = require('must'),
     q = require('q'),
     supertest = require('./q-supertest'),
     helpers = require('./helpers'),
     registry = require('../lib/registry');
 
 describe('apiProxyServlet', function() {
-    var app;
+    var app, tester;
     before(function() {
-        return server()
-            .then(function(application) {
-                app = application;
+        return server().listen(0)
+            .then(function(server) {
+                app = server;
+                tester = supertest(server);
             });
     });
 
-    after(function(done) {
-        app.destroy(done);
+    after(function() {
+        return app.destroy();
     });
 
     describe('GET /grid/api/proxy', function() {
@@ -25,7 +25,7 @@ describe('apiProxyServlet', function() {
 
             it('must respond with error if the node was not registered first', function() {
                 // query for the node id
-                return supertest(app)
+                return tester
                     .get('/grid/api/proxy?id=' + nodeUrl)
                     .expect(404, {
                         msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
@@ -35,13 +35,13 @@ describe('apiProxyServlet', function() {
 
             it('must respond with ok if the node was registered before', function() {
                 // register node on the grid
-                return supertest(app)
+                return tester
                     .post('/grid/register')
                     .send(helpers.createRegisterPost(nodeOpts))
                     .expect(200, 'OK - Welcome')
                     .then(function() {
                         // query for the node id
-                        return supertest(app)
+                        return tester
                             .get('/grid/api/proxy?id=' + nodeUrl)
                             .expect(200, {
                                 msg: 'Proxy found!',
@@ -50,7 +50,7 @@ describe('apiProxyServlet', function() {
                     })
                     .then(function() {
                         // unregister node from the grid
-                        return supertest(app)
+                        return tester
                             .post('/grid/unregister?id=' + nodeUrl)
                             .expect(200, 'OK - Bye');
                     });
@@ -73,7 +73,7 @@ describe('apiProxyServlet', function() {
 
             beforeEach(function() {
                 // register node on the grid
-                return supertest(app)
+                return tester
                     .post('/grid/register')
                     .send(helpers.createRegisterPost(nodeOpts))
                     .expect(200, 'OK - Welcome');
@@ -81,7 +81,7 @@ describe('apiProxyServlet', function() {
 
             afterEach(function() {
                 // unregister node from the grid
-                return supertest(app)
+                return tester
                     .post('/grid/unregister?id=' + nodeUrl)
                     .expect(200, 'OK - Bye');
             });
@@ -91,7 +91,7 @@ describe('apiProxyServlet', function() {
 
                 return q.delay(3000)
                     .then(function() {
-                        return supertest(app)
+                        return tester
                             // query for the node id
                             .get('/grid/api/proxy?id=' + nodeUrl)
                             .expect(404, {
@@ -108,7 +108,7 @@ describe('apiProxyServlet', function() {
                 return q.delay(3000)
                     .then(function() {
                         // query for the node id
-                        return supertest(app)
+                        return tester
                             .get('/grid/api/proxy?id=' + nodeUrl)
                             .expect(404, {
                                 msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
@@ -117,7 +117,7 @@ describe('apiProxyServlet', function() {
                     })
                     .then(function() {
                         // register node on the grid
-                        return supertest(app)
+                        return tester
                             .post('/grid/register')
                             .send(helpers.createRegisterPost(nodeOpts))
                             .expect(200, 'OK - Welcome');

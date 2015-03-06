@@ -1,26 +1,10 @@
-/*
-Copyright 2013 TestingBot
+var q = require('q'),
+    http = require('q-io/http'),
+    enableDestroy = require('server-destroy'),
+    apps = require('./lib/http-apps'),
+    log = require('./lib/log');
 
-Licensed under the Apache License, Version 2.0 (the 'License');
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an 'AS IS' BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-var q = require('q');
-var http = require('http');
-var url = require('url');
-var net = require('net');
-//var repl = require('repl');
-var domain = require('domain');
-var enableDestroy = require('server-destroy');
+Error.stackTraceLimit = Infinity;
 
 // servlets
 var notImplementedServlet = require('./lib/servlets/notImplemented'),
@@ -31,12 +15,6 @@ var notImplementedServlet = require('./lib/servlets/notImplemented'),
     registerServlet = require('./lib/servlets/register'),
     unregisterServlet = require('./lib/servlets/unregister'),
     requestServlet = require('./lib/servlets/request');
-
-var registry = require('./lib/registry');
-var store = require('./lib/store');
-var models = require('./lib/models');
-var parser = require('./lib/parser');
-var log = require('./lib/log');
 
 var servletRoutes = {
     '/grid/api/hub': apiHubServlet,
@@ -53,165 +31,107 @@ var servletRoutes = {
     '/wd/hub/session': requestServlet
 };
 
-function parseIncoming(req, res, cb) {
-	var servletUrl = url.parse(req.url.toString(), true),
-        servlet;
+module.exports = function() {
+    var server = http.Server(function(req, res) {
+        var app = apps.Select(route);
+        app = apps.HandleJsonResponses(app);
+        app = apps.HandleJsonRequests(app);
+        app = apps.HandleUrlEncodedRequests(app);
+        app = apps.HandleRejections(app); // must follow after HandleJsonResponses()
+        app = apps.ParseQuery(app);
+        app = apps.Log(app, log.info, fwd); // must follow before Debug()
+        app = apps.Debug(app); // must follow after HandleRejections() and Log()
+        app = attachEventListeners(app);
 
-	if (servletRoutes[servletUrl.pathname]) {
-		servlet = servletRoutes[servletUrl.pathname];
-		return servlet.handleRequest(req, res, cb);
-	} else {
-		// slower lookup of routes
-		for (var route in servletRoutes) {
-			if (route === servletUrl.pathname.substring(0, route.length)) {
-				servlet = servletRoutes[route];
-				return servlet.handleRequest(req, res, cb);
-			}
-		}
-	}
-
-	if (servletUrl.pathname === '/') {
-		return welcomeServlet.handleRequest(req, res, cb);
-	}
-	
-	return cb(new models.Response(400, 'Unable to handle request - Invalid endpoint or request.'));
-}
-
-function main(args, cb) {
-    if (typeof args === 'function') {
-        cb = args;
-        args = {};
-    }
-    store.setConfig(args || {});
-
-	var port = parseInt(process.argv[2], 10) || process.env.port || 4444,
-        server = http.createServer(function(req, res) {
-            req.on('close', function(err) {
-                log.warn('!error: on close');
-            });
-
-            res.on('close', function() {
-                log.warn('!error: response socket closed before we could send');
-            });
-
-            var reqd = domain.create();
-            reqd.add(req);
-            reqd.add(res);
-
-            res.socket.setTimeout(6 * 60 * 1000);
-            res.socket.removeAllListeners('timeout');
-            req.on('error', function(e) {
-                log.warn(e);
-            });
-
-            reqd.on('error', function(er) {
-                log.warn(er);
-                log.warn(er.stack);
-                log.warn(req.url);
-                try {
-                    res.writeHead(500);
-                    res.end('Error - Something went wrong: ' + er.message);
-                } catch (er) {
-                    log.warn('Error sending 500');
-                    log.warn(er);
-                }
-            });
-
-            res.on('error', function(e) {
-                log.warn(e);
-            });
-
-            res.socket.once('timeout', function() {
-                try {
-                    res.writeHead(500, {'Content-Type': 'text/plain'});
-                    res.end('Error - Socket timed out after 6 minutes');
-                } catch (e) {}
-                try {
-                    res.socket.destroy();
-                } catch (e) {}
-            });
-
-            parseIncoming(req, res, function(response) {
-                if (!response) {
-                    return;
-                }
-                res.writeHead(response.statusCode, response.headers);
-                res.end(response.body);
-            });
-        });
-
-    enableDestroy(server);
-    server.httpAllowHalfOpen = true;
-
-    // TODO: IPv6
-    var defer = q.defer();
-    server.listen(port, '0.0.0.0', function() {
-        log.info('Server booting up... Listening on ' + port);
-        defer.resolve(server);
+        return app(req, res);
     });
 
-    // TODO: reimplement for tests (need ability to close server); or was it realy working?
-    /*var manager = net.createServer(function(socket) {
-            repl.start({
-                    prompt: 'node via TCP socket> ',
-                    input: socket,
-                    output: socket,
-                    useGlobal: true
-                })
-                .on('exit', function() {
-                    socket.end();
-                });
-        })
-        .listen(4446, '127.0.0.1');*/
+    // add destroy() method
+    enableDestroy(server.node);
+    server.destroy = function() {
+        return q(server.node).nmcall('destroy');
+    };
 
-	server.on('clientError', function(err, sock) {
-	    try {
-	    	if (sock.parser.incoming.url === '/grid/register') {
-	    		return;
-	    	}
-	    } catch (e) {}
+    server.node.httpAllowHalfOpen = true;
 
-	    if (err.message.indexOf('ECONNRESET') > -1) {
-	    	log.debug(err);
-	    	return;
-	    }
-	    
-	    log.warn('!error: client error');
-	    log.warn(err.stack);
-	    log.warn(sock);
-	});
+    server.node.on('clientError', function(err, sock) {
+   	    try {
+   	    	if (sock.parser.incoming.url === '/grid/register') {
+   	    		return;
+   	    	}
+   	    } catch (e) {}
 
-	process.on('SIGTERM', function() {
-		// TODO: reimplememnt so it will respect that processPendingRequest()
-        // processes not all pending requests on single call
-        if (registry.pendingRequests.length > 0) {
-			log.warn('Can\'t stop hub just yet, pending requests!');
-			// try now
-			registry.processPendingRequest().done();
-			return;
-		}
+   	    if (err.message.indexOf('ECONNRESET') > -1) {
+   	    	log.debug(err);
+   	    	return;
+   	    }
 
-		log.info('Stopping hub');
-		server.close();
-	});
+   	    log.warn('!error: client error');
+   	    log.warn(err.stack);
+   	    log.warn(sock);
+   	});
 
-	// TODO: Move out of the server() code
-    process.on('uncaughtException', function(err) {
-		log.warn('! Uncaught Exception occurred');
-		log.warn(err.stack);
-	});
+    return server;
+};
 
-    // TODO: reimplement, so the tests will work
-	//server.on('close', function() {
-	//	store.quit();
-	//	process.exit();
-	//});
-
-    return defer.promise.nodeify(cb);
+function fwd(message) {
+    return message;
 }
 
-module.exports = main;
+function route(req) {
+    var app = servletRoutes[req.path];
+    if (app) {
+        return app;
+    }
 
-if (require.main === module) {
-	main(parser.parseArgs()).done();
+    // slower lookup of routes
+    for (var route in servletRoutes) {
+        if (route === req.path.substring(0, route.length)) {
+            return servletRoutes[route];
+        }
+    }
+
+    // root
+    if (req.path === '/') {
+        return welcomeServlet;
+    }
+
+    // 404
+    return apps.notFound;
+}
+
+function attachEventListeners(app) {
+    return function(req, res) {
+        req.node.on('close', function() {
+            log.warn('!warn: request socket closed');
+        });
+        req.node.on('error', function(err) {
+            log.warn(err.stack || err);
+        });
+
+        res.node.on('close', function() {
+            log.warn('!warn: response socket closed before we could send');
+        });
+        res.node.on('error', function(err) {
+            log.warn(err.stack || err);
+        });
+
+        var timeout = q.defer();
+
+        res.node.socket.removeAllListeners('timeout');
+        res.node.socket.setTimeout(6 * 60 * 1000);
+        res.node.socket.once('timeout', function() {
+            try {
+                res.node.writeHead(500, {'Content-Type': 'text/plain'});
+                res.node.end('Error: Socket timed out after 6 minutes');
+            } catch (e) {}
+            try {
+                res.node.socket.destroy();
+            } catch (e) {}
+
+            timeout.resolve();
+        });
+
+        return q.race([timeout.promise, app(req, res)]);
+    }
 }
