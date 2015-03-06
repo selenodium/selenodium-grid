@@ -1,5 +1,5 @@
 var expect = require('must'),
-    matcher = require('../lib/capabilitymatcher'),
+    matcher = require('../lib/capabilityMatcher'),
     models = require('../lib/models'),
     store = require('../lib/store');
 
@@ -27,7 +27,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [caps]))
                 .then(function() {
-                    return matcher.findNode(caps);
+                    return matcher(caps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -40,7 +40,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode(findCaps);
+                    return matcher(findCaps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -53,7 +53,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode(findCaps);
+                    return matcher(findCaps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -66,7 +66,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode(findCaps);
+                    return matcher(findCaps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -78,7 +78,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode({});
+                    return matcher({});
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -90,7 +90,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode({nothing: 'else'});
+                    return matcher({nothing: 'else'});
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -103,7 +103,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode(findCaps);
+                    return matcher(findCaps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -116,7 +116,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode(findCaps);
+                    return matcher(findCaps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -129,7 +129,7 @@ describe('CapabilityMatcher', function() {
 
             return store.addAvailableNode(new models.Node('127.0.0.1', 5556, [storeCaps]))
                 .then(function() {
-                    return matcher.findNode(findCaps);
+                    return matcher(findCaps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.1');
@@ -146,7 +146,7 @@ describe('CapabilityMatcher', function() {
                     return store.addAvailableNode(new models.Node('127.0.0.2', 5556, [storeCaps2]))
                 })
                 .then(function() {
-                    return matcher.findNode(findCaps);
+                    return matcher(findCaps);
                 })
                 .then(function(node) {
                     expect(node.host).to.equal('127.0.0.2');
