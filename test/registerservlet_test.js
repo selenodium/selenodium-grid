@@ -4,12 +4,12 @@ var server = require('../server'),
     helpers = require('./helpers');
 
 describe('RegisterServlet', function() {
-    before(function(done) {
-        store.flushdb(done);
+    before(function() {
+        return store.flushdb();
     });
 
-    after(function(done) {
-        store.flushdb(done);
+    after(function() {
+        return store.flushdb();
     });
 
     describe('POST /grid/register', function() {

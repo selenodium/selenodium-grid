@@ -6,12 +6,12 @@ var server = require('../server'),
     _ = require('lodash');
 
 describe('Parallel Tests', function() {
-    before(function(done) {
-        store.flushdb(done);
+    before(function() {
+        return store.flushdb();
     });
 
-    after(function(done) {
-        store.flushdb(done);
+    after(function() {
+        return store.flushdb();
     });
 
     describe('parallel tests', function() {

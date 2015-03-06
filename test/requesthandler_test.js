@@ -17,12 +17,12 @@ var badNode, goodNode;
 var testData = require('./testdata');
 
 describe('RequestHandler', function() {
-    before(function(done) {
-        store.flushdb(done);
+    before(function() {
+        return store.flushdb();
     });
 
-    after(function(done) {
-        store.flushdb(done);
+    after(function() {
+        return store.flushdb();
     });
 
     describe('correctly distinguishes between the two protocols', function() {
