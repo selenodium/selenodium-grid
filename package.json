@@ -21,7 +21,6 @@
   "version": "0.1.0",
   "dependencies": {
     "argparse": "~0.1.10",
-    "async": "*",
     "colors": "~0.6.0-1",
     "extend": "^2.0.0",
     "inherit": "^2.2.2",
