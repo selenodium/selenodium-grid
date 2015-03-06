@@ -6,14 +6,17 @@
 
 Selenium Hub/Grid reimplementations in NodeJS.
 
+First it was a fork with a goal to fix some bugs in TestingBot's [node-seleniumgrid].
+But now it is a nerly total rewrite of it using [q] and [q-io].
+
 ## Goals
 
 Some of them are:
 
-- make a server with a full implementation of [Selenium Grid v2 protocol](https://github.com/nicegraham/selenium-grid2-api)
-- let it run in a distributed environment (many data centers across the planet)
-- make it easy to extend for front-end engineers
-- make the [Appium](http://appium.io) to be the first class citizen
+- to make a server with a full implementation of [Selenium Grid v2 protocol]
+- to let it run in a distributed environment (many data centers across the planet)
+- to make it easy to extend for front-end engineers
+- to make the [Appium](http://appium.io) to be the first class citizen
   (respect it's `platformName` and `platformVersion` capapilities)
 
 ## Requirements
@@ -73,3 +76,7 @@ Licensed under the [Apache License, Version 2.0][license-url].
 [node-url]: http://nodejs.org/
 [license-badge]: https://img.shields.io/npm/l/selenodium-grid.svg
 [license-url]: http://www.apache.org/licenses/LICENSE-2.0
+[node-seleniumgrid]: https://github.com/testingbot/node-seleniumgrid
+[Selenium Grid v2 protocol]: https://github.com/nicegraham/selenium-grid2-api
+[q]: https://github.com/kriskowal/q
+[q-io]: https://github.com/kriskowal/q-io
