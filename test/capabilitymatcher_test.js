@@ -4,21 +4,21 @@ var expect = require('must'),
     store = require('../lib/store');
 
 describe('CapabilityMatcher', function() {
-    before(function(done) {
-        store.flushdb(done);
+    before(function() {
+        return store.flushdb();
     });
 
-    after(function(done) {
-        store.flushdb(done);
+    after(function() {
+        return store.flushdb();
     });
 
     describe('Correctly find a match', function() {
-        beforeEach(function(done) {
-            store.removeAllAvailableNodes(done);
+        beforeEach(function() {
+            return store.removeAllAvailableNodes();
         });
 
-        afterEach(function(done) {
-            store.removeAllAvailableNodes(done);
+        afterEach(function() {
+            return store.removeAllAvailableNodes();
         });
 
         it('must correctly find a full match', function() {

@@ -71,7 +71,7 @@ function createNodeUrl(opts) {
     return 'http://' + opts.host + ':' + opts.port;
 }
 
-function createNodeMock(opts, cb) {
+function createNodeMock(opts) {
     var host = opts.host || '127.0.0.1',
         port = opts.port || 4444,
         app = nodeMockApp;
@@ -95,8 +95,7 @@ function createNodeMock(opts, cb) {
         .catch(function(err) {
             err.message = util.format('Could not start server on %s:%s\n', host, port) + err.message;
             return q.reject(err);
-        })
-        .nodeify(cb);
+        });
 }
 
 function nodeMockApp(req, res) {
@@ -155,27 +154,25 @@ function location(location, status) {
     }
 }
 
-function createAndRegisterNodeMock(app, opts, cb) {
+function createAndRegisterNodeMock(app, opts) {
     return createNodeMock(opts)
-        .then(function(server) {
+        .then(function(mock) {
             return registerNodeMock(app, opts)
-                .thenResolve([server, app]);
-        })
-        .nodeify(cb);
+                .thenResolve([mock, app]);
+        });
 }
 
-function registerNodeMock(app, opts, cb) {
+function registerNodeMock(app, opts) {
     return q(app)
         .then(function(app) {
             return supertest(app)
                 .post('/grid/register')
                 .send(createRegisterPost(opts))
                 .expect(200, 'OK - Welcome');
-        })
-        .nodeify(cb);
+        });
 }
 
-function unregisterNodeMock(app, mock, cb) {
+function unregisterNodeMock(app, mock) {
     return q.all([app, mock])
         .spread(function(app, mock) {
             return supertest(app)
@@ -184,8 +181,7 @@ function unregisterNodeMock(app, mock, cb) {
                 .then(function() {
                     return mock.destroy();
                 })
-        })
-        .nodeify(cb);
+        });
 }
 
 function getServerAddress(server, path) {

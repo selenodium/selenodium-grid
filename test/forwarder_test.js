@@ -20,8 +20,8 @@ xdescribe('ForwarderServlet', function() {
     });
 
     describe('requesting a capability not currently on the grid', function() {
-        beforeEach(function(done) {
-            store.flushdb(done);
+        beforeEach(function() {
+            return store.flushdb();
         });
 
         var nodeServerMock;

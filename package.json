@@ -15,9 +15,8 @@
     "email": "info@testingbot.com"
     }
   ],
-  "main": "./server.js",
   "bin": {
-    "selenodium-grid": "./lib/bin.js"
+    "selenodium-grid": "bin/selenodium-grid"
   },
   "version": "0.1.0",
   "dependencies": {

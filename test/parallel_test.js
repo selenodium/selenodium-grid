@@ -6,26 +6,28 @@ var server = require('../server'),
     _ = require('lodash');
 
 describe('Parallel Tests', function() {
-    before(function(done) {
-        store.flushdb(done);
+    before(function() {
+        return store.flushdb();
     });
 
-    after(function(done) {
-        store.flushdb(done);
+    after(function() {
+        return store.flushdb();
     });
 
     describe('parallel tests', function() {
         var nodesCount = 5,
             app,
+            tester,
             nodeMocks;
 
         beforeEach(function() {
-            return q.nfcall(server)
-                .then(function(application) {
-                    app = application;
+            return server().listen(0)
+                .then(function(server) {
+                    app = server;
+                    tester = supertest(server);
                     nodeMocks = q.all(
                         _.times(nodesCount, function(i) {
-                            return helpers.createAndRegisterNodeMock(application, {port: 5590 + i}).get(0);
+                            return helpers.createAndRegisterNodeMock(server, {port: 5590 + i}).get(0);
                         })
                     );
                     return nodeMocks;
@@ -42,7 +44,7 @@ describe('Parallel Tests', function() {
                 .all()
                 .delay(1000)
                 .then(function() {
-                    return q(app).nmcall('destroy');
+                    return app.destroy();
                 })
                 .delay(1000);
         });
@@ -50,25 +52,25 @@ describe('Parallel Tests', function() {
         it('must be possible to run tests in parallel across different nodes at once', function() {
             this.timeout(10000);
 
-            return runTests(app, nodesCount);
+            return runTests(tester, nodesCount);
         });
 
         it('must be possible to start more tests in parallel than the number of nodes available, all tests must succeed', function() {
             this.timeout(10000);
 
             // we ask 15 but we only have 5 nodes available
-            return runTests(app, nodesCount * 3);
+            return runTests(tester, nodesCount * 3);
         });
 
     });
 });
 
-function runTests(app, count, delay) {
+function runTests(tester, count, delay) {
     delay = delay || 500;
 
     return q.all(
         _.times(count, function() {
-            return supertest(app)
+            return tester
                 .post('/wd/hub/session')
                 .send({desiredCapabilities: {browserName: 'firefox'}})
                 .expect(200)
@@ -79,7 +81,7 @@ function runTests(app, count, delay) {
                 .delay(delay)
                 .then(function(sessionId) {
                     // stop session
-                    return supertest(app)
+                    return tester
                         .delete('/wd/hub/session/' + sessionId)
                         .expect(200, {status: 0});
                 });
