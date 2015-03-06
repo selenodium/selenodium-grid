@@ -1,6 +1,7 @@
 {
   "name": "selenodium-grid",
-  "description": "A Selenium Grid reimplementation in NodeJS",
+  "description": "Selenium Hub/Grid reimplementation in NodeJS",
+  "license": "Apache-2.0",
   "tags": [
     "selenium",
     "grid"
