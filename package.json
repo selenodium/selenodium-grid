@@ -12,8 +12,8 @@
       "email": "peimei@ya.ru"
     },
     {
-    "name": "Testingbot",
-    "email": "info@testingbot.com"
+      "name": "Testingbot",
+      "email": "info@testingbot.com"
     }
   ],
   "bin": {
@@ -21,8 +21,8 @@
   },
   "version": "0.1.0",
   "dependencies": {
-    "argparse": "~0.1.10",
-    "colors": "~0.6.0-1",
+    "argparse": "^1.0.1",
+    "chalk": "^1.0.0",
     "extend": "^2.0.0",
     "inherit": "^2.2.2",
     "lodash": "^3.3.1",
