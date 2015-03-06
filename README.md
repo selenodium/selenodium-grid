@@ -1,5 +1,7 @@
 # selenodium-grid
 
+[![npm version][npm-badge]][npm-url] [![node version][node-badge]][node-url] [![license][license-badge]][license-url]
+
 [![Build Status][travis-badge]][travis-url] [![Coverage Status][coveralls-badge]][coveralls-url] [![Dependency Status][david-badge]][david-url] [![devDependency Status][david-dev-badge]][david-dev-url]
 
 Selenium Hub/Grid reimplementations in NodeJS.
@@ -65,3 +67,9 @@ Licensed under the [Apache License, Version 2.0][license-url].
 [david-url]: https://david-dm.org/selenodium/selenodium-grid
 [david-dev-badge]: https://david-dm.org/selenodium/selenodium-grid/dev-status.svg
 [david-dev-url]: https://david-dm.org/selenodium/selenodium-grid#info=devDependencies
+[npm-badge]: https://img.shields.io/npm/v/selenodium-grid.svg.svg
+[npm-url]: http://packages.npmjs.org/selenodium-grid
+[node-badge]: https://img.shields.io/node/v/selenodium-grid.svg
+[node-url]: http://nodejs.org/
+[license-badge]: https://img.shields.io/npm/l/selenodium-grid.svg
+[license-url]: http://www.apache.org/licenses/LICENSE-2.0
