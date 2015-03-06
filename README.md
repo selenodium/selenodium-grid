@@ -1,79 +1,67 @@
-selenodium-grid
-===============
+# selenodium-grid
 
-[![Build Status](https://travis-ci.org/selenodium/selenodium-grid.svg?branch=dev)](https://travis-ci.org/selenodium/selenodium-grid) [![Coverage Status](https://coveralls.io/repos/selenodium/selenodium-grid/badge.svg?branch=dev)](https://coveralls.io/r/selenodium/selenodium-grid?branch=dev) [![Dependency Status](https://david-dm.org/selenodium/selenodium-grid.svg)](https://david-dm.org/selenodium/selenodium-grid) [![devDependency Status](https://david-dm.org/selenodium/selenodium-grid/dev-status.svg)](https://david-dm.org/selenodium/selenodium-grid#info=devDependencies)
+[![Build Status][travis-badge]][travis-url] [![Coverage Status][coveralls-badge]][coveralls-url] [![Dependency Status][david-badge]][david-url] [![devDependency Status][david-dev-badge]][david-dev-url]
 
-Selenium Hub/Grid built in nodeJS and used in production on [TestingBot.com](http://testingbot.com).
+Selenium Hub/Grid reimplementations in NodeJS.
 
-At TestingBot we've been using this code for 11 months now, running on a single CPU server with the latest version of nodejs.
+## Goals
 
-We built this to replace the Selenium grid functionality that comes with the default Selenium source code in Java.
-One of the reasons we used nodeJS was because we wanted it to be easy to read and understand.
+Some of them are:
 
-With this code, you can run a Selenium grid, point your own Selenium nodes to it and run tests against it.
-It also comes with an option to use the TestingBot grid if a specific browser is not present on your grid.
-So for example: you have 2 virtual machines with both Linux and Windows but you also want to run tests against Mac.
-By using this grid, your tests will run on your own 2 virtual machines and use the TestingBot grid to run the tests on our Mac VMs.
+- make a server with a full implementation of [Selenium Grid v2 protocol](https://github.com/nicegraham/selenium-grid2-api)
+- let it run in a distributed environment (many data centers across the planet)
+- make it easy to extend for front-end engineers
+- make the [Appium](http://appium.io) to be the first class citizen
+  (respect it's `platformName` and `platformVersion` capapilities)
 
-Requirements
-------------
+## Requirements
 
 General:
 
-* NodeJS, at least v0.10.0
-* npm
+- [NodeJS](http://nodejs.org), at least v0.10
+- [npm](http://npmjs.org)
 
-User Quick Start
-------------
+## Quick Start
 
-* sudo npm -g install node-seleniumgrid
-* node-seleniumgrid -k testingbot_key -s testingbot_secret
+1. Install and run:
 
-You now have a local Selenium grid running on port 4444.
-Start a Selenium node and point it to this grid, it should register to the grid.
-Now run a simple Selenium test against your new grid, depending on the capabilities you requested it should forward the test to your Selenium node.
+    - `npm -g install selenodium-grid`
+    - `selenodium-grid`
 
-1. run `node-seleniumgrid`
-2. start a node `java -jar selenium-standalone.jar -role node -hub http://my-computer-ip:4444/grid/register`
-3. point your test to run on my-computer-ip port 4444:
+    You now have a local Selenium grid running on port `4444`.
 
-```ruby
-require "rubygems"
-require "selenium-webdriver" 
-require "selenium/client"
+2. Start a Selenium node and point it to this grid, it should register to the grid.
 
-caps = {
-  :browserName => "firefox",
-  :version => "22",
-  :platform => "WINDOWS"
-}
+   `java -jar selenium-standalone.jar -role node -hub http://my-computer-ip:4444/grid/register`
 
-urlhub = "http://my-computer-ip:4444/wd/hub"
-client = Selenium::WebDriver::Remote::Http::Default.new
-client.timeout = 120
+3. Now run a simple Selenium test against your new grid, depending on the capabilities
+   you requested it should forward the test to your Selenium node. Point your tests to the url like:
 
-@webdriver = Selenium::WebDriver.for :remote, :url => urlhub, :desired_capabilities => caps, :http_client => client
-@webdriver.navigate.to "https://www.google.com"
-puts @webdriver.title
-@webdriver.quit
-```
+   `http://my-computer-ip:4444/wd/hub`
 
-Troubleshooting
-------------
+## Troubleshooting
 
 If you encounter problems setting this up, please open a ticket in the issues section.
 
-Tests
-------------
+## Tests
 
-There are tests included in this project, to run them, please use mocha:
-`mocha tests/*.js`
+There are tests included in this project. To run them:
 
-Contributing
-------------
+`npm test`
+
+## Contributing
+
 Fork the project, make a change, and send a pull request!
 
-License
-------------
+## License
 
-Licensed under the Apache License, Version 2.0
+Licensed under the [Apache License, Version 2.0][license-url].
+
+[travis-badge]: https://travis-ci.org/selenodium/selenodium-grid.svg?branch=dev
+[travis-url]: https://travis-ci.org/selenodium/selenodium-grid
+[coveralls-badge]: https://coveralls.io/repos/selenodium/selenodium-grid/badge.svg?branch=dev
+[coveralls-url]: https://coveralls.io/r/selenodium/selenodium-grid?branch=dev
+[david-badge]: https://david-dm.org/selenodium/selenodium-grid.svg
+[david-url]: https://david-dm.org/selenodium/selenodium-grid
+[david-dev-badge]: https://david-dm.org/selenodium/selenodium-grid/dev-status.svg
+[david-dev-url]: https://david-dm.org/selenodium/selenodium-grid#info=devDependencies
