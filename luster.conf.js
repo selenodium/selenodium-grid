@@ -1,5 +1,5 @@
 module.exports = {
-    app: './lib/bin',
+    app: './bin/selenodium-grid',
     workers: 1,
     server: {
         port: process.env.PORT || 4444
@@ -9,7 +9,7 @@ module.exports = {
     //},
     extensions: {
         'luster-guard': {
-            patterns: ['server.js', 'lib/**/*.js', 'node_modules/**']
+            patterns: ['index.js', 'server.js', 'lib/**/*.js', 'node_modules/**']
         }
     }
 };
