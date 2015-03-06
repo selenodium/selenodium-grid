@@ -1,5 +1,4 @@
 var server = require('../server');
-var requestHandler = require('../lib/requesthandler');
 var registry = require('../lib/registry');
 var models = require('../lib/models');
 var store = require('../lib/store');
@@ -23,18 +22,6 @@ describe('RequestHandler', function() {
 
     after(function() {
         return store.flushdb();
-    });
-
-    describe('correctly distinguishes between the two protocols', function() {
-        it('must determine an RC request', function() {
-            var proto = requestHandler.determineProtocol('/selenium-server/driver/?cmd=getNewBrowserSession');
-            expect(proto).to.equal('RC');
-        });
-
-        it('must determine an WebDriver request', function() {
-            var proto = requestHandler.determineProtocol('/wd/hub/session');
-            expect(proto).to.equal('WebDriver');
-        });
     });
 
     describe('encoding test', function() {
