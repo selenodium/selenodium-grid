@@ -2,7 +2,7 @@
 
 'use strict';
 
-var app = require('..').main,
-    parser = require('../lib/parser');
+// Do not limit stack trace
+Error.stackTraceLimit = Infinity;
 
-app(parser.parseArgs()).done();
+require('../lib/coa').run();
