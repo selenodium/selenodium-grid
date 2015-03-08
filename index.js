@@ -5,8 +5,8 @@ var log = require('./lib/log'),
 
 function main(args) {
     var port = parseInt(process.argv[2], 10) || process.env.port || 4444,
-        // TODO: IPv6
-        host = process.argv[3] || process.env.host || '0.0.0.0',
+        // listen on all interfaces by default (IPv4 and IPv6)
+        host = process.argv[3] || process.env.host || '::',
         srv = server();
 
     store.setConfig(args || {});
