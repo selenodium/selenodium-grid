@@ -3,13 +3,13 @@ var log = require('./lib/log'),
     registry = require('./lib/registry'),
     server = require('./server');
 
-function main(args) {
-    var port = parseInt(process.argv[2], 10) || process.env.port || 4444,
+function main(opts, args) {
+    var port = parseInt(args.port, 10) || process.env.port || 4444,
         // listen on all interfaces by default (IPv4 and IPv6)
-        host = process.argv[3] || process.env.host || '::',
+        host = args.host || process.env.host || '::',
         srv = server();
 
-    store.setConfig(args || {});
+    store.setConfig(opts || {});
 
     process.on('uncaughtException', function(err) {
 		log.warn('! Uncaught Exception occurred:\n%s', err.stack || err);
@@ -21,7 +21,8 @@ function main(args) {
         .listen(port, host)
         .tap(function() {
             log.info('Server booting up... Listening on ' + port);
-        });
+        })
+        .thenResolve();
 }
 
 function handleSignals(server) {
