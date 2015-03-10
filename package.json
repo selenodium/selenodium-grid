@@ -29,7 +29,7 @@
     "luster": "^0.5.3",
     "luster-guard": "^0.4.0",
     "q": "^1.1.2",
-    "q-io": "^1.11.6",
+    "q-io": "git://github.com/arikon/q-io.git#feature/request-timeout",
     "qs": "^2.3.3",
     "server-destroy": "^1.0.0",
     "tracer": "*"
@@ -38,6 +38,7 @@
     "coveralls": "^2.11.2",
     "mocha": "^2.1.0",
     "must": "^0.12.0",
+    "real-nock": "git://github.com/TabDigital/real-nock.git#814225df3bf67cb60d557ebe9cfdaee63af663eb",
     "should": "^5.0.0",
     "supertest": "^0.15.0",
     "unit-coverage": "^3.4.0"
