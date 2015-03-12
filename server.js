@@ -52,6 +52,9 @@ module.exports = function() {
         return q(server.node).nmcall('destroy');
     };
 
+    // set socket timeout for 60 sec as in Selenium Hub
+    server.node.setTimeout(60000);
+
     server.node.httpAllowHalfOpen = true;
 
     server.node.on('clientError', function(err, sock) {
