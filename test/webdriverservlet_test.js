@@ -283,7 +283,7 @@ describe('WebDriverServlet', function() {
                         // this node should receive the command
                         tester
                             .get('/grid/unregister?id=http://127.0.0.1:5592')
-                            .expect(200, 'OK - Bye')
+                            .expect(200, 'ok')
                             .end(function(err, res) {
                                 nodeServerMock.close(done);
                             });
@@ -295,7 +295,7 @@ describe('WebDriverServlet', function() {
                     tester
                         .post('/grid/register')
                         .send(postData)
-                        .expect(200, 'OK - Welcome')
+                        .expect(200, 'ok')
                         .end(function(err, res) {
                             tester
                                 .post('/wd/hub/session')
@@ -322,7 +322,7 @@ describe('WebDriverServlet', function() {
 			tester
 				.post('/grid/register')
 				.send(postData)
-                .expect(200, 'OK - Welcome')
+                .expect(200, 'ok')
 				.end(function(err, res) {
 					expect(registry.pendingRequests, 'pendingRequests').to.be.empty();
 
@@ -330,7 +330,7 @@ describe('WebDriverServlet', function() {
                         expect(registry.pendingRequests).to.not.be.empty();
 						tester
 							.get('/grid/unregister?id=http://127.0.0.1:5593')
-                            .expect(200, 'OK - Bye')
+                            .expect(200, 'ok')
                             .end(function(err, res) {
 								nodeServerMock.close();
 					  			done();
