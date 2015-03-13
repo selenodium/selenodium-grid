@@ -23,6 +23,7 @@
   "dependencies": {
     "chalk": "^1.0.0",
     "coa": "^1.0.0",
+    "configs-overload": "^0.2.0",
     "extend": "^2.0.0",
     "inherit": "^2.2.2",
     "lodash": "^3.3.1",
@@ -58,29 +59,25 @@
   },
   "unit-coverage": {
     "common": [
+      "-S",
+      "relative",
+      "-O",
+      "sources=lib",
+      "-O",
+      "tests=test",
       "--sources",
       "lib/**/*.js",
-      "--sources",
-      "server.js",
-      "--sources",
-      "index.js",
-      "--exclude",
-      "node_modules/**",
       "--tests",
       "test/**/*.js",
       "--additional",
-      "server.js",
-      "--additional",
-      "index.js",
-      "--additional",
       "lib",
-      "--additional",
-      "test"
+      "--",
+      "--recursive"
     ]
   },
   "scripts": {
     "start": "luster",
-    "test": "mocha",
+    "test": "mocha --recursive",
     "coverage": "unit-coverage run --quiet --profile common",
     "coverage-html": "npm run coverage -- --reporter html --output coverage.html",
     "travis": "npm test && npm run coverage -- --reporter lcov | coveralls"
