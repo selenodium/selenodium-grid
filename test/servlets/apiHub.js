@@ -1,9 +1,9 @@
-var server = require('../lib/server'),
-    config = require('../lib/config'),
-    Registry = require('../lib/registry_'),
+var server = require('../../lib/server'),
+    config = require('../../lib/config'),
+    Registry = require('../../lib/registry_'),
     path = require('path'),
     fs = require('q-io/fs'),
-    supertest = require('./q-supertest');
+    supertest = require('../q-supertest');
 
 describe('apiHubServlet', function() {
     var app, tester;
@@ -21,7 +21,7 @@ describe('apiHubServlet', function() {
 
 	describe('GET /grid/api/hub', function() {
 		it('must respond with the hub configuration', function() {
-            return fs.read(path.join(__dirname, '..', 'config', 'default.json'))
+            return fs.read(path.join(__dirname, '..', '..', 'config', 'default.json'))
                 .then(function(data) {
                     return tester
                         .get('/grid/api/hub/')
