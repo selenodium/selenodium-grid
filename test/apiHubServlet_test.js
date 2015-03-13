@@ -1,4 +1,6 @@
 var server = require('../lib/server'),
+    config = require('../lib/config'),
+    Registry = require('../lib/registry_'),
     path = require('path'),
     fs = require('q-io/fs'),
     supertest = require('./q-supertest');
@@ -6,7 +8,7 @@ var server = require('../lib/server'),
 describe('apiHubServlet', function() {
     var app, tester;
     before(function() {
-        return server().listen(0)
+        return server(new Registry(config())).listen(0)
             .then(function(server) {
                 app = server;
                 tester = supertest(server);
