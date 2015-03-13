@@ -1,4 +1,4 @@
-var server = require('../server'),
+var server = require('../lib/server'),
     registry = require('../lib/registry'),
     models = require('../lib/models'),
     store = require('../lib/store'),

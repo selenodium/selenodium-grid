@@ -1,4 +1,4 @@
-var server = require('../server');
+var server = require('../lib/server');
 var registry = require('../lib/registry');
 var models = require('../lib/models');
 var store = require('../lib/store');

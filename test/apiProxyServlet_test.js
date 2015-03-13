@@ -1,4 +1,4 @@
-var server = require('../server'),
+var server = require('../lib/server'),
     q = require('q'),
     supertest = require('./q-supertest'),
     helpers = require('./helpers'),

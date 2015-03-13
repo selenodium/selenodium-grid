@@ -1,14 +1,14 @@
 {
-  "host": "127.0.0.1",
+  "host": "::",
   "port": 4444,
-  "cleanupCycle": 15000,
-  "timeout": 90000,
-  "browserTimeout": 120000,
   "newSessionWaitTimeout": -1,
   "servlets": [],
   "prioritizer": null,
   "capabilityMatcher": "org.openqa.grid.internal.utils.DefaultCapabilityMatcher",
-  "throwOnCapabilityNotPresent": false,
+  "throwOnCapabilityNotPresent": true,
   "nodePolling": 5000,
-  "unregisterIfStillDownAfter": 30000
+  "cleanUpCycle": 5000,
+  "timeout": 300000,
+  "browserTimeout": 0,
+  "maxSession": 5
 }

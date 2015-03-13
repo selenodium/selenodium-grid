@@ -1,4 +1,4 @@
-var server = require('../server'),
+var server = require('../lib/server'),
     path = require('path'),
     fs = require('q-io/fs'),
     supertest = require('./q-supertest');
@@ -19,7 +19,7 @@ describe('apiHubServlet', function() {
 
 	describe('GET /grid/api/hub', function() {
 		it('must respond with the hub configuration', function() {
-            return fs.read(path.join(__dirname, '..', 'config.json'))
+            return fs.read(path.join(__dirname, '..', 'config', 'default.json'))
                 .then(function(data) {
                     return tester
                         .get('/grid/api/hub/')
