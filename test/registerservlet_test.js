@@ -33,11 +33,11 @@ describe('RegisterServlet', function() {
             return tester
                 .post('/grid/register')
                 .send(postData)
-                .expect(200, 'OK - Welcome')
+                .expect(200, 'ok')
                 .then(function() {
                     return tester
                         .get('/grid/unregister?id=' + helpers.createNodeUrl(nodeOpts))
-                        .expect(200, 'OK - Bye');
+                        .expect(200, 'ok');
                 });
         });
 
@@ -55,17 +55,17 @@ describe('RegisterServlet', function() {
             return tester
                 .post('/grid/register')
                 .send(postData)
-                .expect(200, 'OK - Welcome')
+                .expect(200, 'ok')
                 .then(function() {
                     return tester
                         .post('/grid/register')
                         .send(postData)
-                        .expect(200, 'OK - Welcome');
+                        .expect(200, 'ok');
                 })
                 .then(function() {
                     return tester
                         .get('/grid/unregister?id=' + helpers.createNodeUrl(nodeOpts))
-                        .expect(200, 'OK - Bye');
+                        .expect(200, 'ok');
                 });
         });
     });

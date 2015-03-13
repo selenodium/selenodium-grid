@@ -38,7 +38,7 @@ describe('apiProxyServlet', function() {
                 return tester
                     .post('/grid/register')
                     .send(helpers.createRegisterPost(nodeOpts))
-                    .expect(200, 'OK - Welcome')
+                    .expect(200, 'ok')
                     .then(function() {
                         // query for the node id
                         return tester
@@ -52,7 +52,7 @@ describe('apiProxyServlet', function() {
                         // unregister node from the grid
                         return tester
                             .post('/grid/unregister?id=' + nodeUrl)
-                            .expect(200, 'OK - Bye');
+                            .expect(200, 'ok');
                     });
             });
         });
@@ -76,14 +76,14 @@ describe('apiProxyServlet', function() {
                 return tester
                     .post('/grid/register')
                     .send(helpers.createRegisterPost(nodeOpts))
-                    .expect(200, 'OK - Welcome');
+                    .expect(200, 'ok');
             });
 
             afterEach(function() {
                 // unregister node from the grid
                 return tester
                     .post('/grid/unregister?id=' + nodeUrl)
-                    .expect(200, 'OK - Bye');
+                    .expect(200, 'ok');
             });
 
             it('must return a not found response if the node has not shown up again in NODE_TIMEOUT time', function() {
@@ -120,7 +120,7 @@ describe('apiProxyServlet', function() {
                         return tester
                             .post('/grid/register')
                             .send(helpers.createRegisterPost(nodeOpts))
-                            .expect(200, 'OK - Welcome');
+                            .expect(200, 'ok');
                     });
             });
         });

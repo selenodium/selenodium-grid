@@ -168,7 +168,7 @@ function registerNodeMock(app, opts) {
             return supertest(app)
                 .post('/grid/register')
                 .send(createRegisterPost(opts))
-                .expect(200, 'OK - Welcome');
+                .expect(200, 'ok');
         });
 }
 
@@ -177,7 +177,7 @@ function unregisterNodeMock(app, mock) {
         .spread(function(app, mock) {
             return supertest(app)
                 .get('/grid/unregister?id=' + getServerAddress(mock))
-                .expect(200, 'OK - Bye')
+                .expect(200, 'ok')
                 .then(function() {
                     return mock.destroy();
                 })
