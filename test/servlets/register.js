@@ -1,7 +1,9 @@
-var server = require('../lib/server'),
-    store = require('../lib/store'),
-    supertest = require('./q-supertest'),
-    helpers = require('./helpers');
+var server = require('../../lib/server'),
+    store = require('../../lib/store'),
+    config = require('../../lib/config'),
+    Registry = require('../../lib/registry_'),
+    supertest = require('../q-supertest'),
+    helpers = require('../helpers');
 
 describe('RegisterServlet', function() {
     before(function() {
@@ -15,7 +17,7 @@ describe('RegisterServlet', function() {
     describe('POST /grid/register', function() {
         var app, tester;
         before(function() {
-            return server().listen(0)
+            return server(new Registry(config())).listen(0)
                 .then(function(server) {
                     app = server;
                     tester = supertest(server);
