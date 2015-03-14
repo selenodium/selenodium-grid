@@ -39,7 +39,7 @@
     "coveralls": "^2.11.2",
     "mocha": "^2.1.0",
     "must": "^0.12.0",
-    "real-nock": "git://github.com/TabDigital/real-nock.git#814225df3bf67cb60d557ebe9cfdaee63af663eb",
+    "real-nock": "^1.0.1",
     "should": "^5.0.0",
     "supertest": "^0.15.0",
     "unit-coverage": "^3.4.0"
