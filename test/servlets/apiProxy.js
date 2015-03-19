@@ -27,7 +27,7 @@ describe('apiProxyServlet', function() {
                 // query for the node id
                 return tester
                     .get('/grid/api/proxy?id=' + nodeUrl)
-                    .expect(404, {
+                    .expect(200, {
                         msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
                         success: false
                     });
@@ -94,7 +94,7 @@ describe('apiProxyServlet', function() {
                         return tester
                             // query for the node id
                             .get('/grid/api/proxy?id=' + nodeUrl)
-                            .expect(404, {
+                            .expect(200, {
                                 msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
                                 success: false
                             });
@@ -110,7 +110,7 @@ describe('apiProxyServlet', function() {
                         // query for the node id
                         return tester
                             .get('/grid/api/proxy?id=' + nodeUrl)
-                            .expect(404, {
+                            .expect(200, {
                                 msg: 'Cannot find proxy with ID=' + nodeUrl + ' in the registry.',
                                 success: false
                             });
