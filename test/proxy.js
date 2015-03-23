@@ -1,4 +1,4 @@
-var Stub = require('real-nock'),
+var nock = require('nock'),
     q = require('q'),
     http = require('q-io/http'),
     expect = require('must'),
@@ -6,12 +6,13 @@ var Stub = require('real-nock'),
 
 describe('proxy', function() {
     before(function() {
-        this.backend = new Stub({port: 9000, debug: true});
-        return q(this.backend).ninvoke('start');
+        nock.activate();
+        this.scope = nock('http://localhost:9000');
     });
 
     after(function() {
-        return q(this.backend).ninvoke('stop');
+        delete this.scope;
+        nock.restore();
     });
 
     beforeEach(resetStub);
@@ -19,10 +20,10 @@ describe('proxy', function() {
 
     it('should retry 2 times and get result', function() {
         var self = this;
-        this.backend.stub
+        this.scope
             .post('/')
                 .times(2)
-                .delayConnection(300)
+                .socketDelay(300)
                 .reply(200, 'OK')
             .post('/')
                 .reply(200, 'OK');
@@ -41,16 +42,16 @@ describe('proxy', function() {
         return responseBody(proxy(req, node))
             .spread(function(res, body) {
                 expect(body).to.equal('OK');
-                self.backend.stub.done();
+                self.scope.done();
             });
     });
 
     it('should fail after 3 retries', function() {
         var self = this;
-        this.backend.stub
+        this.scope
             .post('/')
                 .times(4)
-                .delayConnection(300)
+                .socketDelay(300)
                 .reply(200, 'OK');
 
         var req = {
@@ -70,13 +71,13 @@ describe('proxy', function() {
             })
             .then(function(catched) {
                 expect(catched).to.be.true();
-                self.backend.stub.done();
+                self.scope.done();
             });
     });
 });
 
 function resetStub() {
-    this.backend.reset();
+    nock.cleanAll();
 }
 
 function responseBody(res) {
