@@ -5,7 +5,7 @@ var server = require('../../lib/server'),
     supertest = require('q-supertest'),
     helpers = require('../../lib/test-helpers');
 
-describe('apiProxyServlet', function() {
+describe('servlets/apiProxy', function() {
     var app, tester;
     before(function() {
         return server(new Registry(config())).listen(0)

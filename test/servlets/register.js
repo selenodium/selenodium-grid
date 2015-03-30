@@ -4,7 +4,7 @@ var server = require('../../lib/server'),
     supertest = require('q-supertest'),
     helpers = require('../../lib/test-helpers');
 
-describe('RegisterServlet', function() {
+describe('servlets/register', function() {
     describe('POST /grid/register', function() {
         var app, tester;
         before(function() {
