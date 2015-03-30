@@ -17,11 +17,11 @@ describe('servlets/notImplemented', function() {
         return app.destroy();
     });
 
-	describe('GET /grid/driver', function() {
-		it('must respond with not implemented', function() {
+    describe('GET /grid/driver', function() {
+        it('must respond with not implemented', function() {
             return tester
                 .get('/grid/driver')
                 .expect(501, /not implemented/i);
-		});
-	});
+        });
+    });
 });

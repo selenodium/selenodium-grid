@@ -17,11 +17,11 @@ describe('servlets/welcome', function() {
         return app.destroy();
     });
 
-	describe('GET /', function() {
-		it('must respond with welcome message', function() {
+    describe('GET /', function() {
+        it('must respond with welcome message', function() {
             return tester
                 .get('/')
                 .expect(200, /welcome/i);
-		});
-	});
+        });
+    });
 });

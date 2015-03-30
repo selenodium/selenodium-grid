@@ -19,8 +19,8 @@ describe('servlets/apiHub', function() {
         return app.destroy();
     });
 
-	describe('GET /grid/api/hub', function() {
-		it('must respond with the hub configuration', function() {
+    describe('GET /grid/api/hub', function() {
+        it('must respond with the hub configuration', function() {
             return fs.read(path.join(__dirname, '..', '..', 'config', 'default.json'))
                 .then(function(data) {
                     return tester
@@ -28,6 +28,6 @@ describe('servlets/apiHub', function() {
                         .expect(200, JSON.parse(data.toString()))
                         .expect('Content-Type', /json/);
                 });
-		});
-	});
+        });
+    });
 });
