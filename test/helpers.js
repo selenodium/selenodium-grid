@@ -4,8 +4,11 @@ var q = require('q'),
     HttpsServer = require('https').Server,
     extend = require('extend'),
     enableDestroy = require('server-destroy'),
-    supertest = require('./q-supertest'),
-    testData = require('./testdata');
+    supertest = require('./q-supertest');
+
+function getSessionID() {
+    return Math.round(Math.random() * 1000003420) + Math.round(Math.random() * 1000023400);
+}
 
 function createRegisterPost(opts) {
     // do not mutate source opts
@@ -100,7 +103,7 @@ function createNodeMock(opts) {
 
 function nodeMockApp(req, res) {
     var uri = req.path,
-        sessionId = testData.getSessionID();
+        sessionId = getSessionID();
 
     if (determineProtocol(uri) === 'WebDriver') {
         // WebDriver

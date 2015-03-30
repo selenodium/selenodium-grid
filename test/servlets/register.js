@@ -1,19 +1,10 @@
 var server = require('../../lib/server'),
-    store = require('../../lib/store'),
     config = require('../../lib/config'),
     Registry = require('../../lib/registry_'),
     supertest = require('../q-supertest'),
     helpers = require('../helpers');
 
 describe('RegisterServlet', function() {
-    before(function() {
-        return store.flushdb();
-    });
-
-    after(function() {
-        return store.flushdb();
-    });
-
     describe('POST /grid/register', function() {
         var app, tester;
         before(function() {
