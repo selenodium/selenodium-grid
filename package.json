@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
-    "mocha": "^2.1.0",
+    "mocha": "^2.2.1",
     "must": "^0.12.0",
     "nock": "^1.2.0",
     "q-supertest": "^1.0.0",
@@ -74,9 +74,7 @@
       "--tests",
       "test/**/*.js",
       "--additional",
-      "lib",
-      "--",
-      "--recursive"
+      "lib"
     ]
   },
   "scripts": {
