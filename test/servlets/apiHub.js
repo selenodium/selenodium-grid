@@ -3,7 +3,7 @@ var server = require('../../lib/server'),
     Registry = require('../../lib/registry'),
     path = require('path'),
     fs = require('q-io/fs'),
-    supertest = require('../q-supertest');
+    supertest = require('q-supertest');
 
 describe('apiHubServlet', function() {
     var app, tester;

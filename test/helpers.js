@@ -4,7 +4,7 @@ var q = require('q'),
     HttpsServer = require('https').Server,
     extend = require('extend'),
     enableDestroy = require('server-destroy'),
-    supertest = require('./q-supertest');
+    supertest = require('q-supertest');
 
 function getSessionID() {
     return Math.round(Math.random() * 1000003420) + Math.round(Math.random() * 1000023400);
