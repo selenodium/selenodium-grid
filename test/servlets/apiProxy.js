@@ -1,6 +1,6 @@
 var server = require('../../lib/server'),
     config = require('../../lib/config'),
-    Registry = require('../../lib/registry_'),
+    Registry = require('../../lib/registry'),
     q = require('q'),
     supertest = require('../q-supertest'),
     helpers = require('../helpers');

@@ -1,6 +1,6 @@
 var server = require('../../lib/server'),
     config = require('../../lib/config'),
-    Registry = require('../../lib/registry_'),
+    Registry = require('../../lib/registry'),
     path = require('path'),
     fs = require('q-io/fs'),
     supertest = require('../q-supertest');
