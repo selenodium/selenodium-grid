@@ -38,6 +38,7 @@
     "tracer": "^0.7.4"
   },
   "devDependencies": {
+    "assertion-error": "^1.0.1",
     "coveralls": "^2.11.2",
     "mocha": "^2.2.1",
     "must": "^0.12.0",
