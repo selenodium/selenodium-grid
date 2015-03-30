@@ -3,7 +3,7 @@ var server = require('../../lib/server'),
     Registry = require('../../lib/registry'),
     q = require('q'),
     supertest = require('q-supertest'),
-    helpers = require('../helpers');
+    helpers = require('../../lib/test-helpers');
 
 describe('apiProxyServlet', function() {
     var app, tester;

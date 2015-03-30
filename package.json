@@ -69,6 +69,8 @@
       "sources=lib",
       "-O",
       "tests=test",
+      "--excludes",
+      "lib/**test-*.js",
       "--sources",
       "lib/**/*.js",
       "--tests",

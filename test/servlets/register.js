@@ -2,7 +2,7 @@ var server = require('../../lib/server'),
     config = require('../../lib/config'),
     Registry = require('../../lib/registry'),
     supertest = require('q-supertest'),
-    helpers = require('../helpers');
+    helpers = require('../../lib/test-helpers');
 
 describe('RegisterServlet', function() {
     describe('POST /grid/register', function() {
