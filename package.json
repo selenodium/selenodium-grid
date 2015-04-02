@@ -46,6 +46,7 @@
     "q-supertest": "^1.0.0",
     "real-nock": "^1.0.1",
     "should": "^5.0.0",
+    "sinon": "^1.14.1",
     "supertest": "^0.15.0",
     "unit-coverage": "^3.4.0"
   },
