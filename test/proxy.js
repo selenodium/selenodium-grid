@@ -60,7 +60,7 @@ describe('proxy', function() {
                 headers: {},
                 data: {},
                 timeout: 100,
-                // retries: 3, // default
+                retries: 3,
                 retryDelay: 100
             },
             node = {host: 'localhost', port: 9000};
