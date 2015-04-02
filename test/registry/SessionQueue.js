@@ -20,6 +20,29 @@ describe('registry/SessionQueue', function() {
             });
     });
 
+    it('addRequest() must reject when throwOnCapabilityNotPresent enabled and there are no satisfying nodes', function() {
+        var NodeSetStub = inherit({
+            getNewSession: function(req) {
+                return q(null);
+            },
+            hasCapability: function(caps) {
+                return false;
+            }
+        });
+
+        var queue = new SessionQueue({throwOnCapabilityNotPresent: true}, new NodeSetStub()),
+            callback = function() {
+                throw new Error('Must not resolve');
+            },
+            errback = function(err) {
+                expect(err).to.be.instanceOf(Error);
+                expect(queue.getRequestCount()).to.equal(0);
+            };
+
+        return queue.addRequest({capabilities: {browserName: 'firefox'}})
+            .then(callback, errback);
+    });
+
     it('addRequest() must reject on newSessionWaitTimeout', function() {
         var NodeSetStub = inherit({
             getNewSession: function(req) {
