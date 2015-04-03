@@ -1,13 +1,14 @@
 var server = require('../../lib/server'),
+    config = require('../../lib/config'),
+    Registry = require('../../lib/registry'),
     q = require('q'),
-    supertest = require('../q-supertest'),
-    helpers = require('../helpers'),
-    registry = require('../../lib/registry');
+    supertest = require('q-supertest'),
+    helpers = require('../../lib/test-helpers');
 
-describe('apiProxyServlet', function() {
+describe('servlets/apiProxy', function() {
     var app, tester;
     before(function() {
-        return server().listen(0)
+        return server(new Registry(config())).listen(0)
             .then(function(server) {
                 app = server;
                 tester = supertest(server);
@@ -35,15 +36,18 @@ describe('apiProxyServlet', function() {
 
             it('must respond with ok if the node was registered before', function() {
                 // register node on the grid
+                var regReq = helpers.createRegisterPost(nodeOpts);
                 return tester
                     .post('/grid/register')
-                    .send(helpers.createRegisterPost(nodeOpts))
+                    .send(regReq)
                     .expect(200, 'ok')
                     .then(function() {
                         // query for the node id
                         return tester
                             .get('/grid/api/proxy?id=' + nodeUrl)
                             .expect(200, {
+                                id: nodeUrl,
+                                request: regReq,
                                 msg: 'Proxy found!',
                                 success: true
                             });
@@ -58,17 +62,13 @@ describe('apiProxyServlet', function() {
         });
 
         describe('timeout', function() {
-            var nodeTimeoutOld;
-            before(function() {
-                nodeTimeoutOld = registry.NODE_TIMEOUT;
-                registry.NODE_TIMEOUT = 1000;
-            });
-
-            after(function() {
-                registry.NODE_TIMEOUT = nodeTimeoutOld;
-            });
-
-            var nodeOpts = {port: 5560},
+            var nodeOpts = {
+                    port: 5560,
+                    nodePolling: 200,
+                    downPollingLimit: 1,
+                    unregisterIfStillDownAfter: 500,
+                    nodeStatusCheckTimeout: 50
+                },
                 nodeUrl = helpers.createNodeUrl(nodeOpts);
 
             beforeEach(function() {
@@ -86,10 +86,10 @@ describe('apiProxyServlet', function() {
                     .expect(200, 'ok');
             });
 
-            it('must return a not found response if the node has not shown up again in NODE_TIMEOUT time', function() {
-                this.timeout(5000);
+            it('must return a not found response if the node was unregistered after timeout', function() {
+                this.timeout(3000);
 
-                return q.delay(3000)
+                return q.delay(2000)
                     .then(function() {
                         return tester
                             // query for the node id
@@ -102,10 +102,10 @@ describe('apiProxyServlet', function() {
             });
 
             // TODO: move this test out to registerservlet_test or registry_test
-            it('must be possible to register the node again after it has been removed from registry after NODE_TIMEOUT time', function() {
-                this.timeout(5000);
+            it('must be possible to register the node again after it has been removed from registry after timeout', function() {
+                this.timeout(3000);
 
-                return q.delay(3000)
+                return q.delay(2000)
                     .then(function() {
                         // query for the node id
                         return tester

@@ -1,11 +1,11 @@
 var server = require('../../lib/server'),
     config = require('../../lib/config'),
-    Registry = require('../../lib/registry_'),
+    Registry = require('../../lib/registry'),
     path = require('path'),
     fs = require('q-io/fs'),
-    supertest = require('../q-supertest');
+    supertest = require('q-supertest');
 
-describe('apiHubServlet', function() {
+describe('servlets/apiHub', function() {
     var app, tester;
     before(function() {
         return server(new Registry(config())).listen(0)
@@ -19,8 +19,8 @@ describe('apiHubServlet', function() {
         return app.destroy();
     });
 
-	describe('GET /grid/api/hub', function() {
-		it('must respond with the hub configuration', function() {
+    describe('GET /grid/api/hub', function() {
+        it('must respond with the hub configuration', function() {
             return fs.read(path.join(__dirname, '..', '..', 'config', 'default.json'))
                 .then(function(data) {
                     return tester
@@ -28,6 +28,6 @@ describe('apiHubServlet', function() {
                         .expect(200, JSON.parse(data.toString()))
                         .expect('Content-Type', /json/);
                 });
-		});
-	});
+        });
+    });
 });

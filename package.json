@@ -23,7 +23,9 @@
   "dependencies": {
     "chalk": "^1.0.0",
     "coa": "^1.0.0",
+    "collections": "^1.2.1",
     "configs-overload": "^0.2.0",
+    "eventemitter3": "^0.1.6",
     "extend": "^2.0.0",
     "inherit": "^2.2.2",
     "lodash": "^3.3.1",
@@ -36,12 +38,15 @@
     "tracer": "^0.7.4"
   },
   "devDependencies": {
+    "assertion-error": "^1.0.1",
     "coveralls": "^2.11.2",
-    "mocha": "^2.1.0",
+    "mocha": "^2.2.1",
     "must": "^0.12.0",
     "nock": "^1.2.0",
+    "q-supertest": "^1.0.0",
     "real-nock": "^1.0.1",
     "should": "^5.0.0",
+    "sinon": "^1.14.1",
     "supertest": "^0.15.0",
     "unit-coverage": "^3.4.0"
   },
@@ -66,14 +71,14 @@
       "sources=lib",
       "-O",
       "tests=test",
+      "--excludes",
+      "lib/**test-*.js",
       "--sources",
       "lib/**/*.js",
       "--tests",
       "test/**/*.js",
       "--additional",
-      "lib",
-      "--",
-      "--recursive"
+      "lib"
     ]
   },
   "scripts": {
