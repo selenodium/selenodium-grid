@@ -1,3 +1,5 @@
+'use strict';
+
 var Node = require('../../lib/registry/Node'),
     NodeSlot = require('../../lib/registry/NodeSlot'),
     inherit = require('inherit'),

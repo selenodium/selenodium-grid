@@ -1,3 +1,5 @@
+'use strict';
+
 var apps = require('../lib/http-apps'),
     expect = require('must'),
     AssertionError = require('assertion-error'),

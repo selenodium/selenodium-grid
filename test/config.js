@@ -1,3 +1,5 @@
+'use strict';
+
 var config = require('../lib/config'),
     expect = require('must');
 

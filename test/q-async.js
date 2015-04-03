@@ -1,3 +1,5 @@
+'use strict';
+
 var async = require('../lib/q-async'),
     expect = require('must');
 

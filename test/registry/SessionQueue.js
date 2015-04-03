@@ -1,3 +1,5 @@
+'use strict';
+
 var SessionQueue = require('../../lib/registry/SessionQueue'),
     httpIncomingMessage = require('http').IncomingMessage,
     inherit = require('inherit'),
