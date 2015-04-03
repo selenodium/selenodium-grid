@@ -1,6 +1,7 @@
+'use strict';
+
 var nock = require('nock'),
     q = require('q'),
-    http = require('q-io/http'),
     expect = require('must'),
     proxy = require('../lib/proxy');
 

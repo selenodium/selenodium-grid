@@ -1,3 +1,5 @@
+'use strict';
+
 var objectMd5 = require('../lib/object-md5'),
     expect = require('must');
 

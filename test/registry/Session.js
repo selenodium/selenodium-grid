@@ -1,7 +1,6 @@
+'use strict';
+
 var Session = require('../../lib/registry/Session'),
-    //Node = require('../../lib/registry/Node'),
-    //NodeSlot = require('../../lib/registry/NodeSlot'),
-    //inherit = require('inherit'),
     sinon = require('sinon'),
     expect = require('must'),
     q = require('q'),

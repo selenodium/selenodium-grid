@@ -1,7 +1,10 @@
+'use strict';
+
 var capabilityUtils = require('../lib/capability-utils'),
-    defaultMatcher = capabilityUtils.defaultMatcher,
-    normalizeCapabilities = capabilityUtils.normalizeCapabilities,
     expect = require('must');
+
+var defaultMatcher = capabilityUtils.defaultMatcher,
+    normalizeCapabilities = capabilityUtils.normalizeCapabilities;
 
 describe('capability-utils', function() {
     describe('defaultMatcher', function() {

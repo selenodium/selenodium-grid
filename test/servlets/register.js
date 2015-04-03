@@ -1,3 +1,5 @@
+'use strict';
+
 var server = require('../../lib/server'),
     config = require('../../lib/config'),
     Registry = require('../../lib/registry'),
