@@ -1,6 +1,8 @@
 var SessionQueue = require('../../lib/registry/SessionQueue'),
+    httpIncomingMessage = require('http').IncomingMessage,
     inherit = require('inherit'),
     q = require('q'),
+    extend = require('extend'),
     expect = require('must'),
     _ = require('lodash');
 
@@ -13,7 +15,7 @@ describe('registry/SessionQueue', function() {
         });
 
         var queue = new SessionQueue({}, new NodeSetStub());
-        return queue.addRequest({sessionId: 'my-new-session'})
+        return queue.addRequest(createRequest({sessionId: 'my-new-session'}))
             .then(function(res) {
                 expect(res).to.be.instanceOf(SessionStub);
                 expect(res.getId()).to.equal('my-new-session');
@@ -39,7 +41,7 @@ describe('registry/SessionQueue', function() {
                 expect(queue.getRequestCount()).to.equal(0);
             };
 
-        return queue.addRequest({capabilities: {browserName: 'firefox'}})
+        return queue.addRequest(createRequest({capabilities: {browserName: 'firefox'}}))
             .then(callback, errback);
     });
 
@@ -59,7 +61,7 @@ describe('registry/SessionQueue', function() {
                 expect(queue.getRequestCount()).to.equal(0);
             };
 
-        return queue.addRequest({})
+        return queue.addRequest(createRequest())
             .then(callback, errback);
     });
 
@@ -84,7 +86,7 @@ describe('registry/SessionQueue', function() {
         var queue = new SessionQueue({}, new NodeSetStub()),
             sessions = _.times(5, function() {
                 var id = _.uniqueId('session');
-                return queue.addRequest({sessionId: id})
+                return queue.addRequest(createRequest({sessionId: id}))
                     .then(function(res) {
                         expect(res).to.be.instanceOf(SessionStub);
                         expect(res.getId()).to.equal(id);
@@ -108,11 +110,35 @@ describe('registry/SessionQueue', function() {
         });
 
         var queue = new SessionQueue({}, new NodeSetStub());
-        return queue.addRequest({sessionId: 'my-new-session'})
+        return queue.addRequest(createRequest({sessionId: 'my-new-session'}))
             .then(function(res) {
                 expect(res).to.be.instanceOf(SessionStub);
                 expect(res.getId()).to.equal('my-new-session');
             });
+    });
+
+    it('request should be removed from queue on client disconnect', function() {
+        var NodeSetStub = inherit({
+            getNewSession: function(req) {
+                return q(new SessionStub(req.sessionId)).delay(50);
+            }
+        });
+
+        var queue = new SessionQueue({}, new NodeSetStub()),
+            callback = function() {
+                throw new Error('Must not resolve');
+            },
+            errback = function(err) {
+                expect(err).to.be.instanceOf(Error);
+                expect(queue.getRequestCount()).to.equal(0);
+            },
+            req = createRequest({sessionId: 'my-new-session'}),
+            res = queue.addRequest(req)
+                .then(callback, errback);
+
+            req.node.emit('close');
+
+        return res;
     });
 });
 
@@ -125,3 +151,7 @@ var SessionStub = inherit({
         return this.id;
     }
 });
+
+function createRequest(data) {
+    return extend({node: new httpIncomingMessage()}, data || {});
+}
