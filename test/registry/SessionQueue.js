@@ -24,7 +24,7 @@ describe('registry/SessionQueue', function() {
             });
     });
 
-    it('addRequest() must reject when throwOnCapabilityNotPresent enabled and there are no satisfying nodes', function() {
+    it('addRequest() must reject when throwOnCapabilityNotPresent is enabled and there are no satisfying nodes', function() {
         var NodeSetStub = inherit({
             getNewSession: function(req) {
                 return q(null);
@@ -138,7 +138,7 @@ describe('registry/SessionQueue', function() {
             res = queue.addRequest(req)
                 .then(callback, errback);
 
-            req.node.emit('close');
+        req.node.emit('close');
 
         return res;
     });

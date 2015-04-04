@@ -75,7 +75,7 @@ describe('capability-utils', function() {
         it('must left untouched non-basic capabilities', function() {
             var caps = {
                 'selenium-version': 123,
-                'IEDriver': 'path/to/binary'
+                IEDriver: 'path/to/binary'
             };
             expect(normalizeCapabilities(caps)).to.eql(caps);
         });

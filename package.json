@@ -41,6 +41,7 @@
     "assertion-error": "^1.0.1",
     "coveralls": "^2.11.2",
     "eslint": "^0.18.0",
+    "jscs": "^1.12.0",
     "mocha": "^2.2.1",
     "must": "^0.12.0",
     "nock": "^1.2.0",
@@ -107,7 +108,7 @@
   },
   "scripts": {
     "start": "luster",
-    "lint": "eslint lib test",
+    "lint": "eslint lib test && jscs lib test",
     "test": "mocha",
     "coverage": "unit-coverage run --quiet --profile common",
     "coverage-html": "npm run coverage -- --reporter html --output coverage.html",
