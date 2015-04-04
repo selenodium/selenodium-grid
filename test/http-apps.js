@@ -17,7 +17,7 @@ describe('http-apps', function() {
                 return registry('default');
             },
             select = function(req) {
-                switch(req) {
+                switch (req) {
                     case 'simple':
                         return simpleApp;
                     default:

@@ -104,7 +104,7 @@ describe('servlets/apiProxy', function() {
             });
 
             // TODO: move this test out to registerservlet_test or registry_test
-            it('must be possible to register the node again after it has been removed from registry after timeout', function() {
+            it('must register the node again after it has been removed from registry after timeout', function() {
                 this.timeout(3000);
 
                 return q.delay(2000)
