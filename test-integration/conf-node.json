@@ -1,0 +1,21 @@
+{
+  "capabilities":
+    [
+      {
+        "browserName": "firefox",
+        "version": "35",
+        "maxInstances": 5,
+        "seleniumProtocol": "WebDriver"
+      }
+    ],
+  "configuration":
+  {
+    "maxSession": 5,
+    "port": 5555,
+    "host": "localhost",
+    "hubPort": 4444,
+    "hubHost": "localhost",
+    "register": true,
+    "registerCycle": 5000
+  }
+}

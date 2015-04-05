@@ -7,3 +7,7 @@ node_modules/
 
 # Logs
 *.log
+
+# Temp files
+test-integration/nohup.*
+test-integration/selenium/
