@@ -316,8 +316,8 @@ describe('registry/Node', function() {
                     onBroken(err);
                 });
 
-                // magic number 550 = nodePolling*5 + nodePolling/2
-                return q.delay(550)
+                // magic number 600 = nodePolling*6
+                return q.delay(600)
                     .then(function() {
                         expect(onDown.calledOnce).to.be.true();
                         expect(onBroken.calledOnce).to.be.true();
