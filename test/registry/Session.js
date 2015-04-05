@@ -46,10 +46,10 @@ describe('registry/Session', function() {
         beforeEach(function() {
             // node and slot stubs
             var config = {
-                    cleanupCycle: 25, // interval, ms
-                    timeout: 0.050, // idle time, sec
+                    cleanupCycle: 50, // interval, ms
+                    timeout: 0.100, // idle time, sec
                     timeoutAdd: 0.001, // idle time addition, sec
-                    maxDuration: 0.100 // max time, sec
+                    maxDuration: 0.200 // max time, sec
                 },
                 node = {
                     config: config,
@@ -80,8 +80,8 @@ describe('registry/Session', function() {
         it('must timeout after idleTimeout', function() {
             var onTimeout = sinon.spy();
             this.session.on('timeout', onTimeout);
-            // timeout * 0.5
-            return q.delay(75)
+            // timeout * 1.5
+            return q.delay(150)
                 .then(function() {
                     expect(onTimeout.calledOnce).to.be.true();
 
@@ -99,14 +99,15 @@ describe('registry/Session', function() {
             self.session.on('timeout', onTimeout);
 
             var touches = _.times(5, function(i) {
-                return q.delay(25 * i)
+                // cleanupCycle * i
+                return q.delay(50 * i)
                     .then(function() {
-                        self.session.proxyRequest({});
+                        return self.session.proxyRequest({});
                     });
             });
 
-            // maxDuration * 0.5
-            return q.all([q.delay(150), q(touches).all()])
+            // maxDuration * 1.5
+            return q.all([q.delay(300), q(touches).all()])
                 .then(function() {
                     expect(getDriver.called).to.be.true();
                     expect(onTimeout.calledOnce).to.be.true();

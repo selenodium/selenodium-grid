@@ -2,7 +2,7 @@
 
 [![npm version][npm-badge]][npm-url] [![node version][node-badge]][node-url] [![license][license-badge]][license-url]
 
-[![Build Status][travis-badge]][travis-url] [![Coverage Status][coveralls-badge]][coveralls-url] [![Dependency Status][david-badge]][david-url] [![devDependency Status][david-dev-badge]][david-dev-url]
+[![Build Status][travis-badge]][travis-url] [![Build status](appveyor-badge)][appveyor-url] [![Coverage Status][coveralls-badge]][coveralls-url] [![Dependency Status][david-badge]][david-url] [![devDependency Status][david-dev-badge]][david-dev-url]
 
 Selenium Hub/Grid reimplementations in NodeJS.
 
@@ -64,6 +64,8 @@ Licensed under the [Apache License, Version 2.0][license-url].
 
 [travis-badge]: https://travis-ci.org/selenodium/selenodium-grid.svg?branch=dev
 [travis-url]: https://travis-ci.org/selenodium/selenodium-grid
+[appveyor-badge]: https://ci.appveyor.com/api/projects/status/e90nd8rvrf6y12a4/branch/dev?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/arikon/selenodium-grid/branch/dev
 [coveralls-badge]: https://coveralls.io/repos/selenodium/selenodium-grid/badge.svg?branch=dev
 [coveralls-url]: https://coveralls.io/r/selenodium/selenodium-grid?branch=dev
 [david-badge]: https://david-dm.org/selenodium/selenodium-grid.svg

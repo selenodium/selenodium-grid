@@ -112,6 +112,7 @@
     "test": "mocha",
     "coverage": "unit-coverage run --quiet --profile common",
     "coverage-html": "npm run coverage -- --reporter html --output coverage.html",
-    "travis": "npm run lint && npm test && npm run coverage -- --reporter lcov | coveralls"
+    "travis": "npm run lint && npm test && npm run coverage -- --reporter lcov | coveralls",
+    "appveyor": "npm test"
   }
 }
