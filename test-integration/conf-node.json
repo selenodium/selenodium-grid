@@ -10,7 +10,7 @@
     ],
   "configuration":
   {
-    "maxSession": 5,
+    "maxSession": 2,
     "port": 5555,
     "host": "localhost",
     "hubPort": 4444,
