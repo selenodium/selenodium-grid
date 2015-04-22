@@ -1,0 +1,4 @@
+hub: LOG_LEVEL=debug ../bin/selenodium-grid --config conf-hub.json
+selenium-hub: ./selenium-server -role hub -hubConfig conf-hub.json
+node: ./selenium-server -role node -nodeConfig conf-node.json -port $PORT
+web: ../node_modules/.bin/http-server test-pages -p 8000 -a localhost -r

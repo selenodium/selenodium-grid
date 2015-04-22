@@ -41,6 +41,8 @@
     "assertion-error": "^1.0.1",
     "coveralls": "^2.11.2",
     "eslint": "^0.18.0",
+    "foreman": "^1.3.0",
+    "http-server": "^0.8.0",
     "jscs": "^1.12.0",
     "mocha": "^2.2.1",
     "must": "^0.12.0",
@@ -50,7 +52,9 @@
     "should": "^5.0.0",
     "sinon": "^1.14.1",
     "supertest": "^0.15.0",
-    "unit-coverage": "^3.4.0"
+    "unit-coverage": "^3.4.0",
+    "wd": "^0.3.11",
+    "webdriver-manager": "^3.0.0"
   },
   "directories": {
     "lib": "./lib"
@@ -113,6 +117,11 @@
     "coverage": "unit-coverage run --quiet --profile common",
     "coverage-html": "npm run coverage -- --reporter html --output coverage.html",
     "travis": "npm run lint && npm test && npm run coverage -- --reporter lcov | coveralls",
-    "appveyor": "npm test"
+    "appveyor": "npm test",
+    "integration-start": "cd test-integration; nohup nf start hub=1,node=5,web=1 2>&1 & echo $! > nohup.pid",
+    "integration-run": "mocha test-integration/test.js",
+    "integration-end": "cd test-integration; test -s nohup.pid && kill -INT $(cat nohup.pid)",
+    "integration": "npm run integration-start && sleep 3 && npm run integration-run; res=$?; npm run integration-end; exit $res",
+    "download-selenium": "webdriver-manager update --out_dir test-integration/selenium"
   }
 }

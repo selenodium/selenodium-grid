@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+function myreadlink() {
+    cd $(dirname $1)         # or  cd ${1%/*}
+    echo $PWD/$(basename $1) # or  echo $PWD/${1##*/}
+}
+
+exec java -jar $(dirname $(myreadlink $0))/selenium/selenium-server-standalone-2.45.0.jar "$@"
